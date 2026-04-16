@@ -14,14 +14,6 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 }
 
-// Debug: Log configuration
-console.log('Firebase Config Check:', {
-  apiKey: firebaseConfig.apiKey ? 'Set' : 'Missing',
-  authDomain: firebaseConfig.authDomain ? 'Set' : 'Missing',
-  projectId: firebaseConfig.projectId ? 'Set' : 'Missing',
-  storageBucket: firebaseConfig.storageBucket ? 'Set' : 'Missing',
-})
-
 // Validate required fields
 if (!firebaseConfig.apiKey) {
   throw new Error('Firebase API Key is missing. Check your environment variables.')

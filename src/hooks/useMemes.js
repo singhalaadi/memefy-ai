@@ -11,11 +11,13 @@ import {
   serverTimestamp 
 } from 'firebase/firestore'
 import toast from 'react-hot-toast'
+import memeApiService from '../services/memeAPI'
 
 export const useMemes = () => {
   const [memes, setMemes] = useState([])
   const [loading, setLoading] = useState(true)
   const [templates, setTemplates] = useState([])
+  const [templatesLoading, setTemplatesLoading] = useState(true)
 
   useEffect(() => {
     fetchMemes()
@@ -78,18 +80,21 @@ export const useMemes = () => {
 
   const fetchTemplates = async () => {
     try {
-      // Mock templates data - in real app, this would come from SuperMeme API
-      const mockTemplates = [
-        { id: 1, name: 'Drake Pointing', image: 'https://images.pexels.com/photos/3784324/pexels-photo-3784324.jpeg?auto=compress&cs=tinysrgb&w=400', category: 'Popular' },
-        { id: 2, name: 'Distracted Boyfriend', image: 'https://images.pexels.com/photos/3777622/pexels-photo-3777622.jpeg?auto=compress&cs=tinysrgb&w=400', category: 'Popular' },
-        { id: 3, name: 'Woman Yelling at Cat', image: 'https://images.pexels.com/photos/4772874/pexels-photo-4772874.jpeg?auto=compress&cs=tinysrgb&w=400', category: 'Trending' },
-        { id: 4, name: 'Expanding Brain', image: 'https://images.pexels.com/photos/3861958/pexels-photo-3861958.jpeg?auto=compress&cs=tinysrgb&w=400', category: 'Classic' },
-        { id: 5, name: 'Change My Mind', image: 'https://images.pexels.com/photos/3184295/pexels-photo-3184295.jpeg?auto=compress&cs=tinysrgb&w=400', category: 'Popular' },
-        { id: 6, name: 'This Is Fine', image: 'https://images.pexels.com/photos/4772874/pexels-photo-4772874.jpeg?auto=compress&cs=tinysrgb&w=400', category: 'Trending' }
-      ]
-      setTemplates(mockTemplates)
+      setTemplatesLoading(true)
+      const templates = await memeApiService.fetchTemplates()
+      setTemplates(templates)
+      
+      // Show success message only if we got templates
+      if (templates && templates.length > 0) {
+        console.log(`Loaded ${templates.length} meme templates`);
+      }
     } catch (error) {
       console.error('Error fetching templates:', error)
+      
+      // Set fallback templates directly if service fails completely
+      setTemplates(memeApiService.getFallbackTemplates())
+    } finally {
+      setTemplatesLoading(false)
     }
   }
 
@@ -160,6 +165,7 @@ export const useMemes = () => {
     memes,
     templates,
     loading,
+    templatesLoading,
     createMeme,
     deleteMeme,
     refetch: fetchMemes

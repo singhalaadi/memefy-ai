@@ -1,0 +1,31 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Memes collection rules
+    match /memes/{memeId} {
+      // Users can read all memes (for gallery view)
+      allow read: if true;
+      
+      // Users can create memes if they're authenticated and the user_id matches their auth ID
+      allow create: if request.auth != null 
+                    && request.auth.uid == request.resource.data.user_id;
+      
+      // Users can update/delete only their own memes
+      allow update, delete: if request.auth != null 
+                           && request.auth.uid == resource.data.user_id;
+    }
+    
+    // Analytics collection (if you have one)
+    match /analytics/{userId} {
+      // Users can only read/write their own analytics
+      allow read, write: if request.auth != null 
+                        && request.auth.uid == userId;
+    }
+    
+    // Default deny all other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

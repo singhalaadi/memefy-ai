@@ -10,11 +10,12 @@ import { v4 as uuidv4 } from "uuid";
 const Generator = () => {
   const { user } = useAuth();
   const { isDarkMode } = useTheme();
-  const { templates, createMeme } = useMemes();
+  const { templates, templatesLoading, createMeme } = useMemes();
   const memeRef = useRef(null);
 
   // State
   const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [textFields, setTextFields] = useState([]);
   const [topText, setTopText] = useState("");
   const [bottomText, setBottomText] = useState("");
   const [textColor, setTextColor] = useState("#FFFFFF");
@@ -24,6 +25,9 @@ const Generator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [activeTab, setActiveTab] = useState("templates");
+  const [loadingTemplates, setLoadingTemplates] = useState(false);
+  const [templatesPerPage] = useState(20);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const categories = [
     "All",
@@ -59,14 +63,80 @@ const Generator = () => {
     "When Wi-Fi is down for 5 seconds",
   ];
 
-  const filteredTemplates =
-    selectedCategory === "All"
-      ? templates.slice(0, 12) // Limit for demo
-      : templates.filter((t) => t.category === selectedCategory).slice(0, 12);
+  // Get all templates for selected category
+  const allFilteredTemplates = selectedCategory === "All" 
+    ? templates 
+    : templates.filter((t) => t.category === selectedCategory);
+    
+  // Progressive loading - show templates in chunks
+  const totalToShow = currentPage * templatesPerPage;
+  const filteredTemplates = allFilteredTemplates.slice(0, totalToShow);
+  
+  // Template counts for display
+  const totalTemplatesCount = allFilteredTemplates.length;
+  const remainingTemplatesCount = Math.max(0, totalTemplatesCount - totalToShow);
+  const canLoadMore = remainingTemplatesCount > 0;
+
+  // Handle template selection
+  const handleTemplateSelect = (template) => {
+    setSelectedTemplate(template);
+    // Initialize text fields based on box_count
+    const boxCount = template.box_count || 2;
+    const initialTextFields = Array.from({ length: boxCount }, (_, index) => ({
+      id: index,
+      text: '',
+      placeholder: `Text ${index + 1}${index === 0 ? ' (Top)' : index === boxCount - 1 ? ' (Bottom)' : ''}`
+    }));
+    setTextFields(initialTextFields);
+    
+    // Keep backward compatibility with existing topText/bottomText
+    if (boxCount >= 1) setTopText('');
+    if (boxCount >= 2) setBottomText('');
+  };
+
+  // Update text field
+  const updateTextField = (id, text) => {
+    setTextFields(prev => prev.map(field => 
+      field.id === id ? { ...field, text } : field
+    ));
+    
+    // Update topText/bottomText for backward compatibility
+    if (id === 0) setTopText(text);
+    if (id === 1) setBottomText(text);
+  };
+
+  // Load more templates
+  const handleLoadMore = () => {
+    setCurrentPage(prev => prev + 1);
+    
+    // Add a small delay for better UX, then scroll to new content
+    setTimeout(() => {
+      const newTemplateIndex = (currentPage - 1) * templatesPerPage;
+      const templateElements = document.querySelectorAll('[data-template-index]');
+      if (templateElements[newTemplateIndex]) {
+        templateElements[newTemplateIndex].scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'center' 
+        });
+      }
+    }, 100);
+  };
+
+  // Reset pagination when changing categories
+  const handleCategoryChange = (category) => {
+    setSelectedCategory(category);
+    setCurrentPage(1); // Reset to first page
+  };
 
   const handleGenerateMeme = async () => {
-    if (!selectedTemplate || (!topText && !bottomText)) {
-      toast.error("Please select a template and add some text! 😅");
+    if (!selectedTemplate) {
+      toast.error("Please select a template first! 😅");
+      return;
+    }
+    
+    const hasText = textFields.some(field => field.text.trim() !== '') || topText.trim() !== '' || bottomText.trim() !== '';
+    if (!hasText) {
+      toast.error("Please add some text to your meme! 😅");
       return;
     }
 
@@ -93,6 +163,7 @@ const Generator = () => {
         template_image: selectedTemplate.image,
         top_text: topText,
         bottom_text: bottomText,
+        text_fields: textFields,
         text_color: textColor,
         font_size: fontSize,
         text_effect: textEffect,
@@ -168,10 +239,18 @@ const Generator = () => {
   const getSuggestion = () => {
     const suggestion =
       aiSuggestions[Math.floor(Math.random() * aiSuggestions.length)];
-    if (Math.random() > 0.5) {
-      setTopText(suggestion);
+    
+    if (textFields.length > 0) {
+      // Randomly select one of the text fields
+      const randomFieldId = Math.floor(Math.random() * textFields.length);
+      updateTextField(randomFieldId, suggestion);
     } else {
-      setBottomText(suggestion);
+      // Fallback to old behavior
+      if (Math.random() > 0.5) {
+        setTopText(suggestion);
+      } else {
+        setBottomText(suggestion);
+      }
     }
     toast("AI suggestion added! 🤖✨", { icon: "💡" });
   };
@@ -270,12 +349,17 @@ const Generator = () => {
               >
                 {/* Category Filter */}
                 <div className="flex flex-wrap gap-2 mb-6 justify-center">
-                  {categories.map((category) => (
+                  {categories.map((category) => {
+                    const categoryCount = category === "All" 
+                      ? templates.length 
+                      : templates.filter(t => t.category === category).length;
+                    
+                    return (
                     <motion.button
                       key={category}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      onClick={() => setSelectedCategory(category)}
+                      onClick={() => handleCategoryChange(category)}
                       className={`px-4 py-2 rounded-full font-medium transition-all duration-500 ease-in-out transform hover:scale-105 ${
                         selectedCategory === category
                           ? "bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg scale-105"
@@ -284,23 +368,50 @@ const Generator = () => {
                           : "bg-white/80 text-gray-600 hover:text-gray-900 hover:bg-white shadow-sm hover:shadow-md border border-gray-200"
                       }`}
                     >
-                      {category}
+                      {category} {categoryCount > 0 && (
+                        <span className="ml-1 text-xs opacity-75">
+                          ({categoryCount})
+                        </span>
+                      )}
                     </motion.button>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* Template Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-                  {filteredTemplates.map((template, index) => (
+                {templatesLoading ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+                    {Array.from({ length: 8 }).map((_, index) => (
+                      <div
+                        key={index}
+                        className={`aspect-square rounded-2xl animate-pulse ${
+                          isDarkMode ? "bg-gray-700" : "bg-gray-200"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+                    {filteredTemplates.length === 0 ? (
+                      <div className="col-span-full text-center py-12">
+                        <div className="text-6xl mb-4">😅</div>
+                        <h3 className="text-xl font-bold mb-2">No Templates Found</h3>
+                        <p className={isDarkMode ? "text-gray-400" : "text-gray-600"}>
+                          Try selecting a different category or check your internet connection
+                        </p>
+                      </div>
+                    ) : (
+                      filteredTemplates.map((template, index) => (
                     <motion.div
                       key={template.id}
+                      data-template-index={index}
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.4, delay: index * 0.1 }}
+                      transition={{ duration: 0.4, delay: (index % templatesPerPage) * 0.05 }}
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => {
-                        setSelectedTemplate(template);
+                        handleTemplateSelect(template);
                         setActiveTab("customize");
                       }}
                       className={`cursor-pointer rounded-2xl overflow-hidden transition-all duration-500 ease-in-out transform hover:scale-105 ${
@@ -331,8 +442,82 @@ const Generator = () => {
                         )}
                       </div>
                     </motion.div>
-                  ))}
-                </div>
+                      ))
+                    )}
+                  </div>
+                )}
+                
+                {/* Template Count and Load More Section */}
+                {!templatesLoading && totalTemplatesCount > 0 && (
+                  <div className="text-center mt-6 space-y-4">
+                    {/* Progress Bar */}
+                    <div className="max-w-md mx-auto">
+                      <div className={`w-full rounded-full h-2 ${isDarkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
+                        <div 
+                          className="bg-gradient-to-r from-pink-500 to-cyan-500 h-2 rounded-full transition-all duration-500 ease-out"
+                          style={{ width: `${Math.min(100, (filteredTemplates.length / totalTemplatesCount) * 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Count Display */}
+                    <div className={`text-sm font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                      Showing <span className="font-bold text-pink-500">{filteredTemplates.length}</span> of{' '}
+                      <span className="font-bold text-cyan-500">{totalTemplatesCount}</span> templates
+                      {selectedCategory !== "All" && (
+                        <span className="block mt-1 text-xs opacity-75">
+                          in "{selectedCategory}" category
+                        </span>
+                      )}
+                    </div>
+                    
+                    {/* Load More Button */}
+                    {canLoadMore && (
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={handleLoadMore}
+                        className={`px-8 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg ${
+                          isDarkMode
+                            ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white hover:shadow-xl"
+                            : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white hover:shadow-xl"
+                        }`}
+                      >
+                        🚀 Load {Math.min(templatesPerPage, remainingTemplatesCount)} More Templates
+                        <span className="block text-xs opacity-80 mt-1">
+                          ({remainingTemplatesCount} remaining)
+                        </span>
+                      </motion.button>
+                    )}
+                    
+                    {/* All Loaded Message */}
+                    {!canLoadMore && totalTemplatesCount > templatesPerPage && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`inline-flex items-center px-6 py-3 rounded-full font-medium ${
+                          isDarkMode
+                            ? "bg-green-900/30 text-green-400 border border-green-700"
+                            : "bg-green-100 text-green-700 border border-green-200"
+                        }`}
+                      >
+                        ✅ All templates loaded!
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => setCurrentPage(1)}
+                          className={`ml-3 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                            isDarkMode
+                              ? "bg-gray-700 hover:bg-gray-600 text-gray-300"
+                              : "bg-gray-200 hover:bg-gray-300 text-gray-600"
+                          }`}
+                        >
+                          Reset to Top
+                        </motion.button>
+                      </motion.div>
+                    )}
+                  </div>
+                )}
               </motion.div>
             )}
 
@@ -383,39 +568,32 @@ const Generator = () => {
                         </h3>
 
                         <div className="space-y-4">
-                          <div>
-                            <label className="block text-sm font-semibold mb-2">
-                              Top Text
-                            </label>
-                            <textarea
-                              value={topText}
-                              onChange={(e) => setTopText(e.target.value)}
-                              placeholder="Enter top text..."
-                              className={`w-full p-4 rounded-xl border-2 resize-none transition-all duration-500 ease-in-out focus:scale-[1.02] ${
-                                isDarkMode
-                                  ? "bg-gray-800/50 border-gray-600 focus:border-pink-500 text-white placeholder-gray-400 backdrop-blur-sm"
-                                  : "bg-white/90 border-gray-300 focus:border-pink-500 text-gray-900 placeholder-gray-500 shadow-sm focus:shadow-md"
-                              }`}
-                              rows="2"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-semibold mb-2">
-                              Bottom Text
-                            </label>
-                            <textarea
-                              value={bottomText}
-                              onChange={(e) => setBottomText(e.target.value)}
-                              placeholder="Enter bottom text..."
-                              className={`w-full p-4 rounded-xl border-2 resize-none transition-all duration-500 ease-in-out focus:scale-[1.02] ${
-                                isDarkMode
-                                  ? "bg-gray-800/50 border-gray-600 focus:border-pink-500 text-white placeholder-gray-400 backdrop-blur-sm"
-                                  : "bg-white/90 border-gray-300 focus:border-pink-500 text-gray-900 placeholder-gray-500 shadow-sm focus:shadow-md"
-                              }`}
-                              rows="2"
-                            />
-                          </div>
+                          {textFields.map((field) => (
+                            <div key={field.id}>
+                              <label className="block text-sm font-semibold mb-2">
+                                {field.placeholder}
+                              </label>
+                              <textarea
+                                value={field.text}
+                                onChange={(e) => updateTextField(field.id, e.target.value)}
+                                placeholder={`Enter ${field.placeholder.toLowerCase()}...`}
+                                className={`w-full p-4 rounded-xl border-2 resize-none transition-all duration-500 ease-in-out focus:scale-[1.02] ${
+                                  isDarkMode
+                                    ? "bg-gray-800/50 border-gray-600 focus:border-pink-500 text-white placeholder-gray-400 backdrop-blur-sm"
+                                    : "bg-white/90 border-gray-300 focus:border-pink-500 text-gray-900 placeholder-gray-500 shadow-sm focus:shadow-md"
+                                }`}
+                                rows="2"
+                              />
+                            </div>
+                          ))}
+                          
+                          {textFields.length === 0 && (
+                            <div className="text-center py-8">
+                              <p className={`text-lg ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                Select a template first to see text options
+                              </p>
+                            </div>
+                          )}
 
                           {/* AI Suggestion Button */}
                           <motion.button
@@ -504,7 +682,39 @@ const Generator = () => {
                           alt={selectedTemplate.name}
                           className="w-full h-auto"
                         />
-                        {topText && (
+                        {textFields.map((field, index) => {
+                          if (!field.text) return null;
+                          
+                          // Position text based on field index
+                          const isTop = index === 0;
+                          const isBottom = index === textFields.length - 1 && textFields.length > 1;
+                          const isMiddle = !isTop && !isBottom;
+                          
+                          let positionClass = "absolute left-1/2 transform -translate-x-1/2 text-center px-2 max-w-full";
+                          
+                          if (isTop) {
+                            positionClass += " top-4";
+                          } else if (isBottom) {
+                            positionClass += " bottom-4";
+                          } else if (isMiddle) {
+                            // Position middle text(s) evenly between top and bottom
+                            const middlePosition = 20 + (index * 30);
+                            positionClass += ` top-[${middlePosition}%]`;
+                          }
+                          
+                          return (
+                            <div
+                              key={field.id}
+                              className={positionClass}
+                              style={getTextStyle()}
+                            >
+                              {field.text.toUpperCase()}
+                            </div>
+                          );
+                        })}
+                        
+                        {/* Fallback for backward compatibility */}
+                        {textFields.length === 0 && topText && (
                           <div
                             className="absolute top-4 left-1/2 transform -translate-x-1/2 text-center px-2 max-w-full"
                             style={getTextStyle()}
@@ -512,7 +722,7 @@ const Generator = () => {
                             {topText.toUpperCase()}
                           </div>
                         )}
-                        {bottomText && (
+                        {textFields.length === 0 && bottomText && (
                           <div
                             className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center px-2 max-w-full"
                             style={getTextStyle()}
@@ -663,7 +873,47 @@ const Generator = () => {
                   alt={generatedMeme.template_name}
                   className="w-full h-auto"
                 />
-                {generatedMeme.top_text && (
+                {generatedMeme.text_fields?.map((field, index) => {
+                  if (!field.text) return null;
+                  
+                  // Position text based on field index
+                  const isTop = index === 0;
+                  const isBottom = index === generatedMeme.text_fields.length - 1 && generatedMeme.text_fields.length > 1;
+                  const isMiddle = !isTop && !isBottom;
+                  
+                  let positionClass = "absolute left-1/2 transform -translate-x-1/2 text-center px-2 max-w-full";
+                  
+                  if (isTop) {
+                    positionClass += " top-4";
+                  } else if (isBottom) {
+                    positionClass += " bottom-4";
+                  } else if (isMiddle) {
+                    // Position middle text(s) evenly between top and bottom
+                    const middlePosition = 20 + (index * 30);
+                    positionClass += ` top-[${middlePosition}%]`;
+                  }
+                  
+                  return (
+                    <div
+                      key={field.id}
+                      className={positionClass}
+                      style={{
+                        color: generatedMeme.text_color,
+                        fontSize: generatedMeme.font_size,
+                        fontWeight: "bold",
+                        textTransform: "uppercase",
+                        textShadow: textEffects.find(
+                          (e) => e.id === generatedMeme.text_effect
+                        )?.style,
+                      }}
+                    >
+                      {field.text.toUpperCase()}
+                    </div>
+                  );
+                })}
+                
+                {/* Fallback for backward compatibility */}
+                {(!generatedMeme.text_fields || generatedMeme.text_fields.length === 0) && generatedMeme.top_text && (
                   <div
                     className="absolute top-4 left-1/2 transform -translate-x-1/2 text-center px-2 max-w-full"
                     style={{
@@ -679,7 +929,7 @@ const Generator = () => {
                     {generatedMeme.top_text.toUpperCase()}
                   </div>
                 )}
-                {generatedMeme.bottom_text && (
+                {(!generatedMeme.text_fields || generatedMeme.text_fields.length === 0) && generatedMeme.bottom_text && (
                   <div
                     className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-center px-2 max-w-full"
                     style={{
