@@ -1,6 +1,8 @@
 import { initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
+import { getStorage } from 'firebase/storage'
+import { getAnalytics } from 'firebase/analytics'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -12,13 +14,36 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 }
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig)
+// Debug: Log configuration
+console.log('Firebase Config Check:', {
+  apiKey: firebaseConfig.apiKey ? 'Set' : 'Missing',
+  authDomain: firebaseConfig.authDomain ? 'Set' : 'Missing',
+  projectId: firebaseConfig.projectId ? 'Set' : 'Missing',
+  storageBucket: firebaseConfig.storageBucket ? 'Set' : 'Missing',
+})
 
-// Initialize Firebase services
+// Validate required fields
+if (!firebaseConfig.apiKey) {
+  throw new Error('Firebase API Key is missing. Check your environment variables.')
+}
+if (!firebaseConfig.projectId) {
+  throw new Error('Firebase Project ID is missing. Check your environment variables.')
+}
+
+let app;
+try {
+  app = initializeApp(firebaseConfig)
+  console.log('Firebase initialized successfully')
+} catch (error) {
+  console.error('Firebase initialization error:', error)
+  throw error
+}
+
 export const auth = getAuth(app)
 export const db = getFirestore(app)
-// Storage disabled - no billing enabled
-export const storage = null
+export const storage = getStorage(app)
 
-export default app;
+// Only initialize analytics if measurement ID is provided
+export const analytics = firebaseConfig.measurementId ? getAnalytics(app) : null
+
+export default app
