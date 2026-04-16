@@ -1,146 +1,239 @@
-# 🎨 MEME FACTORY
+# Memefy-AI
 
 [![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite)](https://vitejs.dev/)
 [![Firebase](https://img.shields.io/badge/Firebase-9-FFCA28?style=flat-square&logo=firebase)](https://firebase.google.com/)
-[![Tailwind](https://img.shields.io/badge/Tailwind-3-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind-3-38BDF8?style=flat-square&logo=tailwindcss)](https://tailwindcss.com/)
 
-Modern meme generator with AI assistance, Google auth, and real-time collaboration.
-
-[MEMEFY-AI PREVIEW: Click Here](https://memefy-ai.netlify.app/)
-
-## ✨ Features
-
-- � **AI-Powered Meme Creation** - Smart text suggestions and concept generation
-- �️ **Rich Template Library** - 100+ popular memes from Imgflip API
-- 🎨 **Advanced Editor** - Live preview, custom fonts, text effects, positioning
-- 🤖 **AI Assistant** - Generate memes from concepts, improve text, suggest templates
-- 🔐 **Google Authentication** - Secure login with profile sync
-- 📱 **Responsive Design** - Works on all devices with optimized layouts
-- 🌙 **Dark/Light Themes** - Toggle between modern UI themes
-- 📊 **User Analytics** - Track meme performance and engagement
-- 💾 **Cloud Storage** - Save and manage your meme collection
-- ⬇️ **Easy Export** - Download memes in high quality
-
-## 🚀 Quick Start
-
-```bash
-# Clone repository
-git clone https://github.com/singhalaadi/memefy-ai.git
-cd memefy-ai
-
-# Install dependencies
-npm install
-
-# Set up environment (optional for demo mode)
-cp .env.example .env
-
-# Start development server
-npm run dev
-```
-
-Visit `http://localhost:5173` and start creating! �
-
-## 🔥 Firebase Setup (Optional)
-
-1. Create [Firebase project](https://console.firebase.google.com)
-2. Enable Authentication (Google) and Firestore
-3. Update `.env` with your config:
-
-```env
-VITE_FIREBASE_API_KEY=your-api-key
-VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your-project-id
-# ... other Firebase config
-```
-
-See [FIREBASE_SETUP.md](FIREBASE_SETUP.md) for detailed instructions.
-
-## �️ Project Structure
-
-```
-src/
-├── components/           # UI components
-│   ├── AIMemeEditor.jsx # Advanced meme editor
-│   └── layout/          # Navigation, layout
-├── pages/               # Route components
-│   ├── Generator.jsx    # Main meme creation
-│   ├── Gallery.jsx      # Meme gallery
-│   ├── Dashboard.jsx    # User dashboard
-│   └── Profile.jsx      # User profile
-├── context/             # React contexts
-├── hooks/               # Custom hooks (useMemes, useAnalytics)
-├── services/            # API services (Firebase AI, meme API)
-└── config/              # Firebase configuration
-```
-
-## 🎯 Key Components
-
-- **Generator**: Template selection, text customization, live preview
-- **AI Meme Editor**: Advanced editor with AI assistance and smart suggestions
-- **Gallery**: Browse community memes with filtering and favorites
-- **Dashboard**: Analytics and user statistics
-- **Profile**: Personal meme collection and account management
-
-## 🤖 AI Features
-
-### Firebase AI (Gemini)
-- **Smart Text Generation**: Generate meme text from concepts
-- **Template Suggestions**: AI recommends templates based on your idea
-- **Text Improvement**: Enhance existing text for better impact
-- **Concept-to-Meme**: Describe your idea, get complete meme suggestions
-
-### Magic Hour AI Integration 🪄
-- **Complete AI Meme Generation**: Input a concept, get a fully generated meme with text
-- **Professional Templates**: Access to popular templates like Drake, Galaxy Brain, Two Buttons
-- **Smart Template Selection**: AI chooses the best template for your concept
-- **High-Quality Output**: Professional meme images ready for sharing
-
-#### Setting up Magic Hour AI:
-1. Sign up at [Magic Hour AI](https://magichour.ai/)
-2. Get your API key from [Developer Hub](https://magichour.ai/developer?tab=api-keys)
-3. Add to your `.env` file:
-   ```env
-   VITE_MAGIC_HOUR_API_KEY=your-magic-hour-api-key-here
-   ```
-4. Each AI meme generation costs 10 credits on Magic Hour
-
-**Pricing**: Magic Hour offers free tier with limited credits, and paid plans starting from ₹833/month
-
-## 🛠️ Tech Stack
-
-- **Frontend**: React 18, Vite, Tailwind CSS, Framer Motion
-- **Backend**: Firebase (Auth, Firestore, Functions)
-- **AI**: Firebase Generative AI (Gemini), Magic Hour AI
-- **APIs**: Imgflip (templates), Magic Hour AI (meme generation), HTML2Canvas (export)
-
-## 🚀 Deployment
-
-**Netlify:**
-```bash
-npm run build
-# Deploy dist/ folder
-```
-
-**Firebase Hosting:**
-```bash
-firebase init hosting
-npm run build
-firebase deploy
-```
-
-## 🤝 Contributing
-
-1. Fork the repo
-2. Create feature branch: `git checkout -b feature/amazing-feature`
-3. Commit changes: `git commit -m 'Add amazing feature'`
-4. Push to branch: `git push origin feature/amazing-feature`
-5. Open Pull Request
-
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) file.
+AI-powered meme generator with a custom-trained sentiment and toxicity model, real-time analytics, and a full-stack cloud deployment.
 
 ---
 
-**Create viral content in seconds • No cap 📈**
+## Features
+
+- **Custom AI Meme Generation** — FastAPI backend with a fine-tuned Gemini + logistic regression pipeline for captions, sentiment, and toxicity scoring
+- **Template Library** — 100+ Imgflip templates proxied securely through the backend
+- **Advanced Editor** — Live preview, multiple text fields, font/effect/position controls
+- **Sentiment & Toxicity Analysis** — Every meme is scored and classified (Safe / Neutral / Risky)
+- **Trend Tracking** — Template usage trends tracked in-memory per session
+- **User Analytics Dashboard** — Personal stats: memes created, views, shares, toxicity average
+- **Secure Authentication** — Email/password and Google Sign-In via Firebase Auth
+- **Cloud Storage** — Meme records persisted in Firestore; large images fall back to localStorage
+- **Dark / Light Mode** — Full theme support with glassmorphism UI
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 18, Vite 5, Tailwind CSS 3, Framer Motion |
+| Backend | Python 3.11, FastAPI, Uvicorn |
+| AI | Google Gemini 2.0 Flash, scikit-learn (TF-IDF + LogReg) |
+| Database | Firebase Firestore |
+| Auth | Firebase Authentication |
+| Meme Rendering | Imgflip API (proxied via backend) |
+
+---
+
+## Local Development
+
+### Prerequisites
+
+- Node.js 18+
+- Python 3.11+
+- Firebase project with Firestore and Auth enabled
+- Imgflip account
+- Google Gemini API key
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/singhalaadi/memefy-ai.git
+cd memefy-ai
+```
+
+### 2. Backend setup
+
+```bash
+cd backend
+python -m venv venv
+
+# Windows
+venv\Scripts\activate
+# macOS/Linux
+source venv/bin/activate
+
+pip install -r requirements.txt
+
+# Copy and fill in environment variables
+cp .env.example .env
+# Edit .env with your Imgflip credentials and Gemini API key
+
+uvicorn main:app --reload --port 8000
+```
+
+Backend runs at `http://localhost:8000`
+
+### 3. Frontend setup
+
+```bash
+cd frontend
+npm install
+
+# Copy and fill in environment variables
+cp .env.example .env.local
+# Edit .env.local with your Firebase config and API keys
+
+npm run dev
+```
+
+Frontend runs at `http://localhost:5173`
+
+---
+
+## Environment Variables
+
+### Frontend (`frontend/.env.local`)
+
+| Variable | Description |
+|---|---|
+| `VITE_FIREBASE_API_KEY` | Firebase project API key |
+| `VITE_FIREBASE_AUTH_DOMAIN` | Firebase auth domain |
+| `VITE_FIREBASE_PROJECT_ID` | Firebase project ID |
+| `VITE_FIREBASE_STORAGE_BUCKET` | Firebase storage bucket |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Firebase messaging sender ID |
+| `VITE_FIREBASE_APP_ID` | Firebase app ID |
+| `VITE_FIREBASE_MEASUREMENT_ID` | Firebase Analytics measurement ID |
+| `VITE_GEMINI_API_KEY` | Google Gemini API key |
+| `VITE_BACKEND_API_URL` | URL of the FastAPI backend |
+
+### Backend (`backend/.env`)
+
+| Variable | Description |
+|---|---|
+| `IMGFLIP_USERNAME` | Imgflip account username |
+| `IMGFLIP_PASSWORD` | Imgflip account password |
+| `GEMINI_API_KEY` | Google Gemini API key |
+| `ALLOWED_ORIGINS` | Comma-separated allowed frontend URLs |
+
+---
+
+## Deployment
+
+Deployment configuration will be added in a future update.
+
+---
+
+## Firebase Setup
+
+### 1. Create a Firebase project
+
+1. Go to [Firebase Console](https://console.firebase.google.com) → **Create a project**
+2. Enable Google Analytics (optional)
+
+### 2. Enable Authentication
+
+1. **Authentication** → **Sign-in method**
+2. Enable **Email/Password** and **Google** providers
+3. Add your domain to **Authorized domains**
+
+### 3. Create Firestore Database
+
+1. **Firestore Database** → **Create database**
+2. Start in **production mode**
+3. Choose a region close to your users
+
+### 4. Get your config
+
+1. **Project Settings** → **Your apps** → Web app (`</>`)
+2. Register the app and copy the config into `frontend/.env.local`
+
+### 5. Firestore Security Rules
+
+Paste these rules in **Firestore → Rules**:
+
+```js
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /memes/{document} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null
+        && request.auth.uid == resource.data.user_id;
+    }
+    match /profiles/{userId} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == userId;
+    }
+  }
+}
+```
+
+### Firestore Collection Schema
+
+```
+memes/
+  user_id         string    Firebase Auth UID
+  template_id     string
+  template_name   string
+  image_url       string    Generated meme URL
+  template_image  string    Template source URL
+  caption         string    AI-generated or manual text
+  sentiment       string    "Positive / Safe" | "Neutral / Sarcastic" | "Risky / Negative"
+  toxicity_score  number    0.0 – 1.0
+  trendy_score    number
+  top_text        string
+  bottom_text     string
+  views           number
+  shares          number
+  likes           number
+  createdAt       timestamp
+
+profiles/
+  displayName     string
+  email           string
+  photoURL        string
+  createdAt       timestamp
+```
+
+---
+
+## Project Structure
+
+```
+memefy-ai/
+├── backend/
+│   ├── artifacts/          # Trained ML model files (.joblib)
+│   ├── main.py             # FastAPI app, routes, Gemini integration
+│   ├── requirements.txt
+│   └── .env.example
+├── frontend/
+│   ├── src/
+│   │   ├── components/     # Reusable UI components
+│   │   ├── context/        # React contexts (Auth, Theme)
+│   │   ├── hooks/          # Custom hooks (useMemes, useAnalytics)
+│   │   ├── pages/          # Route-level page components
+│   │   ├── services/       # API clients (memeAPI, firebaseAI)
+│   │   └── config/         # Firebase initialization
+│   ├── .env.example
+│   └── vite.config.js
+└── README.md
+```
+
+---
+
+## Security Notes
+
+- All API keys are loaded from environment variables — never hardcoded
+- Firebase browser keys are public by design; restrict them via authorized domains in the Firebase Console
+- Backend CORS is restricted to explicit allowed origins via `ALLOWED_ORIGINS`
+- Firestore rules enforce that users can only modify their own documents
+
+---
+
+## License
+
+MIT — see [LICENSE](LICENSE) for details.
