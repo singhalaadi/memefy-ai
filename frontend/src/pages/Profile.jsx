@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
@@ -9,11 +9,9 @@ import { useTheme } from "../context/ThemeContext";
 import { useMemes } from "../hooks/useMemes";
 import { useAnalytics } from "../hooks/useAnalytics";
 
-// Modular Components
 import SEO from "../components/common/SEO";
 import ProfileHeader from "../components/profile/ProfileHeader";
 import MemeCollection from "../components/profile/MemeCollection";
-import ProfileSettings from "../components/profile/ProfileSettings";
 import MemeDetailModal from "../components/profile/MemeDetailModal";
 
 const Profile = () => {
@@ -22,7 +20,7 @@ const Profile = () => {
   const { isDarkMode } = useTheme();
   const { memes, deleteMeme, refetch } = useMemes(user);
   const { analytics } = useAnalytics(user?.id);
-  
+
   // State
   const [currentTab, setCurrentTab] = useState("my-memes");
   const [selectedMeme, setSelectedMeme] = useState(null);
@@ -32,11 +30,10 @@ const Profile = () => {
     if (user?.id && !isDeleting) {
       refetch(user.id);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, isDeleting]);
 
   // Memoized Data
-  const userMemes = useMemo(() => 
+  const userMemes = useMemo(() =>
     memes.filter((meme) => meme.user_id === user?.id),
     [memes, user?.id]
   );
@@ -52,7 +49,7 @@ const Profile = () => {
   const handleRefresh = () => {
     if (!user?.id) return;
     refetch(user.id);
-    toast.success("Collections updated! 🔄", { icon: "📈" });
+    toast.success("Collections updated!");
   };
 
   const handleShare = async (meme) => {
@@ -67,7 +64,7 @@ const Profile = () => {
       } catch (e) { /* user cancelled */ }
     } else {
       navigator.clipboard.writeText(memeUrl);
-      toast.success("Link copied! 📋");
+      toast.success("Link copied!");
     }
   };
 
@@ -76,20 +73,20 @@ const Profile = () => {
     link.href = meme.displayImageUrl || meme.image_url || meme.image;
     link.download = `memefy-${meme.id}.jpg`;
     link.click();
-    toast.success("Downloaded! 📥");
+    toast.success("Downloaded!");
   };
 
   const handleDelete = async (meme) => {
-    if (!window.confirm("Delete this masterpiece? This cannot be undone! 😱")) return;
-    
+    if (!window.confirm("Delete this masterpiece? This cannot be undone!")) return;
+
     setIsDeleting(true);
-    const toastId = toast.loading("Purging the cringe...");
+    const toastId = toast.loading("Deleting...");
     try {
       await deleteMeme(meme.id);
       setSelectedMeme(null);
-      toast.success("Deleted! Onto the next one. ✨", { id: toastId });
+      toast.success("Deleted!", { id: toastId });
     } catch (error) {
-      toast.error("Deletion failed! 😢", { id: toastId });
+      toast.error("Deletion failed!", { id: toastId });
     } finally {
       setIsDeleting(false);
     }
@@ -106,19 +103,18 @@ const Profile = () => {
   const tabs = [
     { id: "my-memes", label: "My Memes", icon: "🎨", count: userMemes.length },
     { id: "favorites", label: "Favorites", icon: "❤️", count: favoriteMemes.length },
-    { id: "settings", label: "Settings", icon: "⚙️" },
   ];
 
   return (
     <div className={`min-h-screen p-4 md:p-8 transition-colors duration-500 ${isDarkMode ? "text-white" : "text-gray-900"}`}>
       <SEO title="My Profile" description="Manage your meme collection and favorites." />
-      
+
       <div className="max-w-6xl mx-auto space-y-8">
-        <ProfileHeader 
-          user={user} 
-          analytics={analytics} 
-          userMemesCount={userMemes.length} 
-          isDarkMode={isDarkMode} 
+        <ProfileHeader
+          user={user}
+          analytics={analytics}
+          userMemesCount={userMemes.length}
+          isDarkMode={isDarkMode}
         />
 
         {/* Tab Navigation */}
@@ -129,11 +125,10 @@ const Profile = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setCurrentTab(tab.id)}
-              className={`px-6 py-3 rounded-2xl font-bold transition-all flex items-center gap-2 ${
-                currentTab === tab.id 
-                  ? "bg-gradient-to-r from-pink-500 to-cyan-500 text-white shadow-xl scale-105" 
+              className={`px-6 py-3 rounded-2xl font-bold transition-all flex items-center gap-2 ${currentTab === tab.id
+                  ? "bg-gradient-to-r from-pink-500 to-cyan-500 text-white shadow-xl scale-105"
                   : "glass opacity-60 hover:opacity-100"
-              }`}
+                }`}
             >
               <span>{tab.icon}</span>
               <span className="hidden sm:inline">{tab.label}</span>
@@ -155,7 +150,7 @@ const Profile = () => {
               transition={{ duration: 0.3 }}
             >
               {currentTab === "my-memes" && (
-                <MemeCollection 
+                <MemeCollection
                   title="My Masterpieces"
                   memes={userMemes}
                   onRefresh={handleRefresh}
@@ -179,7 +174,7 @@ const Profile = () => {
               )}
 
               {currentTab === "favorites" && (
-                <MemeCollection 
+                <MemeCollection
                   title="Legendary Favorites"
                   memes={favoriteMemes}
                   onSelect={setSelectedMeme}
@@ -191,19 +186,18 @@ const Profile = () => {
                 />
               )}
 
-              {currentTab === "settings" && (
-                <ProfileSettings user={user} isDarkMode={isDarkMode} />
-              )}
+
             </motion.div>
           </AnimatePresence>
         </div>
       </div>
 
-      <MemeDetailModal 
+      <MemeDetailModal
         meme={selectedMeme}
         onClose={() => setSelectedMeme(null)}
         onShare={handleShare}
         onDownload={handleDownload}
+        onDelete={handleDelete}
         isDarkMode={isDarkMode}
         formatDate={formatDate}
       />

@@ -27,27 +27,23 @@ class FirebaseAIService {
 
   async initializeGemini() {
     try {
-      // First try to load Firebase AI Logic SDK
       const firebaseAILoaded = await loadFirebaseAI();
       
       if (firebaseAILoaded && getAI && getGenerativeModel && GoogleAIBackend) {
         try {
           const firebaseApp = getFirebaseApp();
           
-          // Initialize Firebase AI Logic backend service
           this.ai = getAI(firebaseApp, { 
             backend: new GoogleAIBackend(),
             apiKey: import.meta.env.VITE_GEMINI_API_KEY
           });
           
-          // Create GenerativeModel instance
           this.textModel = getGenerativeModel(this.ai, { model: "gemini-2.5-flash" });
           return;
         } catch (firebaseError) {
         }
       }
       
-      // Fallback to direct Google AI
       this.genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
       this.textModel = this.genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
       
@@ -63,8 +59,6 @@ class FirebaseAIService {
 
   async listAvailableModels() {
     try {
-      // Firebase AI Logic doesn't expose listModels directly
-      // Return the models supported by Firebase AI Logic
       return ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-2.5-pro'];
     } catch (error) {
       return ['gemini-2.5-flash'];
@@ -116,7 +110,6 @@ class FirebaseAIService {
     }
 
     try {
-      // Simplified prompt
       const prompt = `${position} text for "${templateName}" meme about: "${userPrompt}"
       
       Make it funny and short (max 10 words). Just return the text:`;

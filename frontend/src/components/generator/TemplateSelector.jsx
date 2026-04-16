@@ -30,12 +30,12 @@ const TemplateSelector = ({
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => handleCategoryChange(category)}
-              className={`px-3 md:px-4 py-2 rounded-full font-medium transition-all duration-500 ease-in-out transform hover:scale-105 text-sm md:text-base ${
+              className={`px-3 md:px-4 py-1.5 rounded-full font-bold transition-all duration-300 text-xs md:text-sm ${
                 selectedCategory === category
-                  ? "bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg scale-105"
+                  ? "bg-gradient-to-r from-pink-500 to-cyan-500 text-white shadow-lg shadow-pink-500/20"
                   : isDarkMode
-                    ? "glass-dark text-gray-300 hover:text-white hover:shadow-md"
-                    : "bg-white/80 text-gray-600 hover:text-gray-900 hover:bg-white shadow-sm hover:shadow-md border border-gray-200"
+                    ? "glass-dark border border-white/10 text-gray-400 hover:text-white"
+                    : "bg-white/80 text-gray-600 hover:text-gray-900 shadow-sm border border-gray-200"
               }`}
             >
               {category}{" "}

@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 const MemePreviewModal = ({
   showPreview,
@@ -64,7 +64,7 @@ const MemePreviewModal = ({
                 crossOrigin="anonymous"
               />
 
-              {/* Text overlays if no image_url (local rendering) */}
+              {/* Text overlays if no image_url */}
               {!generatedMeme.image_url && (
                 <div className="absolute inset-0">
                   {generatedMeme.texts?.map((text, idx) => (

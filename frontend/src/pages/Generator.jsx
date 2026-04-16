@@ -9,10 +9,10 @@ import { useTheme } from "../context/ThemeContext";
 import { useMemes } from "../hooks/useMemes";
 import { useNavigate } from "react-router-dom";
 import memeAPI from "../services/memeAPI";
+import { Sparkles, PenTool, Layout, Download, Save, Lightbulb, RefreshCcw, AlertTriangle, CheckCircle2, Wand2 } from "lucide-react";
 
 // Modular Components
 import TemplateSelector from "../components/generator/TemplateSelector";
-import AIGeneratorBox from "../components/generator/AIGeneratorBox";
 import MemeEditorControls from "../components/generator/MemeEditorControls";
 import MemePreviewModal from "../components/generator/MemePreviewModal";
 import SEO from "../components/common/SEO";
@@ -23,7 +23,6 @@ const Generator = () => {
   const { templates, templatesLoading, createMeme } = useMemes(user);
   const navigate = useNavigate();
   
-  // Tab State - restored to original 3-tab layout
   const [activeTab, setActiveTab] = useState("templates");
 
   // State
@@ -91,7 +90,7 @@ const Generator = () => {
     }));
     setTextFields(initialTextFields);
     setActiveTab("customize");
-    toast.success(`${template.name} selected! 🎨`);
+    toast.success(`${template.name} selected!`);
   };
 
   const updateTextField = (id, text) => {
@@ -108,8 +107,8 @@ const Generator = () => {
   };
 
   const generateBackendAIMeme = async () => {
-    if (!backendAIConcept.trim()) return toast.error("Please enter a meme idea! 💭");
-    if (useOwnTemplateForAI && !selectedTemplate) return toast.error("Please select a template first! 🎨");
+    if (!backendAIConcept.trim()) return toast.error("Please enter a meme idea!");
+    if (useOwnTemplateForAI && !selectedTemplate) return toast.error("Please select a template first!");
 
     setIsGeneratingBackendAI(true);
     const toastId = toast.loading("🤖 AI model is analyzing...");
@@ -141,7 +140,7 @@ const Generator = () => {
           template_usage: result.templateRecentUsage || 0,
         });
         setShowPreview(true);
-        toast.success("AI Meme Generated! ✨", { id: toastId });
+        toast.success("AI Meme Generated!", { id: toastId });
       }
     } catch (error) {
       toast.error(`Backend AI failed: ${error.message}`, { id: toastId });
@@ -151,10 +150,10 @@ const Generator = () => {
   };
 
   const handleGenerateMeme = async () => {
-    if (!selectedTemplate) return toast.error("Please select a template first! 😅");
+    if (!selectedTemplate) return toast.error("Please select a template first!");
     
     const manualTexts = textFields.map(f => f.text?.trim() || "");
-    if (manualTexts.every(t => t === "")) return toast.error("Please add some text! 😅");
+    if (manualTexts.every(t => t === "")) return toast.error("Please add some text!");
 
     setIsGenerating(true);
     const toastId = toast.loading("🎨 Rendering your masterpiece...");
@@ -183,7 +182,7 @@ const Generator = () => {
           template_usage: result.templateRecentUsage || 0,
         });
         setShowPreview(true);
-        toast.success("Meme rendered! 🚀", { id: toastId });
+        toast.success("Meme rendered!", { id: toastId });
       }
     } catch (error) {
       toast.error("Rendering failed! 💔", { id: toastId });
@@ -204,18 +203,18 @@ const Generator = () => {
       link.href = blobUrl;
       link.click();
       window.URL.revokeObjectURL(blobUrl);
-      toast.success("Downloaded! 📈");
+      toast.success("Downloaded!");
     } catch (error) {
-      toast.error("Download failed! 😢");
+      toast.error("Download failed!");
     }
   };
 
   const handleSaveMeme = async () => {
-    if (!generatedMeme || !user) return toast.error("Login to save your memes! 🔐");
+    if (!generatedMeme || !user) return toast.error("Login to save your memes!");
     try {
       await createMeme(generatedMeme);
       setShowPreview(false);
-      toast.success("Meme saved! Redirecting to Dashboard... 🚀");
+      toast.success("Meme saved! Redirecting to Dashboard...");
       setTimeout(() => navigate("/dashboard"), 1200);
     } catch (error) {
       toast.error("Save failed! 😢");
@@ -230,7 +229,7 @@ const Generator = () => {
     ];
     const suggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
     if (textFields.length > 0) updateTextField(0, suggestion);
-    toast("AI thought of this for you! 💡");
+    toast("AI thought of this for you!");
   };
 
   const getTextStyle = (pos, stylingOverride = null) => {
@@ -259,12 +258,11 @@ const Generator = () => {
       zIndex: 10
     };
   };
-
-  // Tabs definition (original 3-tab layout from second screenshot)
+  
   const tabs = [
-    { id: "templates", label: "Templates", icon: "🎭" },
-    { id: "customize", label: "Customize", icon: "🖊️" },
-    { id: "effects", label: "Effects", icon: "✨" },
+    { id: "templates", label: "Templates", icon: Layout },
+    { id: "customize", label: "Customize", icon: PenTool },
+    { id: "effects", label: "Effects", icon: Sparkles },
   ];
 
   return (
@@ -273,25 +271,25 @@ const Generator = () => {
 
       {/* Page Header */}
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
-        <h1 className="text-4xl md:text-6xl font-black mb-3 tracking-tight">
+        <h1 className="text-3xl md:text-5xl font-black mb-3 tracking-tight">
           <span className="gradient-text">MEME</span>{" "}
-          <span>🎨</span>{" "}
+          <span className="text-cyan-400 inline-block align-middle mb-1"><Wand2 size={24} /></span>{" "}
           <span className="gradient-text">FACTORY</span>
         </h1>
         <p className={`text-base md:text-lg ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
-          Create viral content in seconds • No cap 🧢
+          Create viral content in seconds • No cap
         </p>
       </motion.div>
 
       {/* Original 3-Tab Navigation */}
-      <div className="flex justify-center gap-3 mb-8">
+      <div className="flex justify-center gap-2 mb-8">
         {tabs.map((tab) => (
           <motion.button
             key={tab.id}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-5 py-2.5 rounded-full font-bold text-sm flex items-center gap-2 transition-all duration-300 ${
+            className={`px-3 md:px-5 py-2 rounded-full font-bold text-xs md:text-sm flex items-center gap-1.5 transition-all duration-300 ${
               activeTab === tab.id
                 ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg shadow-pink-500/30"
                 : isDarkMode
@@ -299,7 +297,7 @@ const Generator = () => {
                   : "bg-white text-gray-500 hover:text-gray-900 shadow-sm border border-gray-200"
             }`}
           >
-            <span>{tab.icon}</span>
+            <tab.icon size={18} />
             <span>{tab.label}</span>
           </motion.button>
         ))}
@@ -347,7 +345,7 @@ const Generator = () => {
             >
               {!selectedTemplate ? (
                 <div className="text-center py-16 space-y-4">
-                  <div className="text-7xl">🎭</div>
+                  <div className="text-cyan-400 flex justify-center"><Layout size={80} /></div>
                   <h3 className="text-2xl font-black italic">No template selected!</h3>
                   <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
                     Go to the Templates tab first and pick a canvas.
@@ -356,9 +354,9 @@ const Generator = () => {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setActiveTab("templates")}
-                    className="mt-4 px-8 py-3 bg-gradient-to-r from-pink-500 to-cyan-500 text-white rounded-full font-bold shadow-lg"
+                    className="mt-4 px-8 py-3 bg-gradient-to-r from-pink-500 to-cyan-500 text-white rounded-full font-bold shadow-lg flex items-center gap-2 mx-auto"
                   >
-                    Pick a Template 🎭
+                    <Layout size={20} /> Pick a Template
                   </motion.button>
                 </div>
               ) : (
@@ -412,7 +410,9 @@ const Generator = () => {
               className="max-w-2xl mx-auto space-y-6"
             >
               <div className={`glass p-6 rounded-2xl space-y-6 ${isDarkMode ? "" : "bg-white/90 shadow-lg border border-gray-100"}`}>
-                <h3 className="text-lg font-black gradient-text">🎨 Text Effects</h3>
+                <h3 className="text-lg font-black gradient-text flex items-center gap-2">
+                  <Sparkles size={20} /> Text Effects
+                </h3>
                 <div className="grid grid-cols-3 gap-3">
                   {textEffects.map((effect) => (
                     <motion.button
@@ -436,7 +436,9 @@ const Generator = () => {
               </div>
 
               <div className={`glass p-6 rounded-2xl space-y-6 ${isDarkMode ? "" : "bg-white/90 shadow-lg border border-gray-100"}`}>
-                <h3 className="text-lg font-black gradient-text">🔠 Font Presets</h3>
+                <h3 className="text-lg font-black gradient-text flex items-center gap-2">
+                  <PenTool size={20} /> Font Presets
+                </h3>
                 <div className="grid grid-cols-2 gap-3">
                   {fontFamilies.map((f) => (
                     <motion.button
@@ -520,7 +522,9 @@ const Generator = () => {
               <div className="relative w-24 h-24 mx-auto mb-6">
                 <div className="absolute inset-0 border-4 border-cyan-500/30 rounded-full"></div>
                 <div className="absolute inset-0 border-4 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
-                <div className="absolute inset-0 flex items-center justify-center text-3xl">🎯</div>
+                <div className="absolute inset-0 flex items-center justify-center text-cyan-500">
+                  <Wand2 size={40} className="animate-pulse" />
+                </div>
               </div>
               <h2 className="text-2xl font-bold text-white mb-2">Memefying your idea...</h2>
               <p className="text-gray-400">Our custom model is cooking up something viral</p>

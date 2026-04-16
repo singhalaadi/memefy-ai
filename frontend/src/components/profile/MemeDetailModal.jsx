@@ -1,118 +1,153 @@
+import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Eye, Share2, Calendar, Sparkles, Download, X, Trash2 } from "lucide-react";
 
-const MemeDetailModal = ({ 
-  meme, 
-  onClose, 
-  onShare, 
-  onDownload, 
+const MemeDetailModal = ({
+  meme,
+  onClose,
+  onShare,
+  onDownload,
+  onDelete,
   isDarkMode,
-  formatDate 
+  formatDate,
 }) => {
-  if (!meme) return null;
+  useEffect(() => {
+    const handler = (e) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  useEffect(() => {
+    if (meme) document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, [meme]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0, y: 30 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.9, opacity: 0, y: 30 }}
-        transition={{ duration: 0.4, type: "spring", bounce: 0.3 }}
-        className={`max-w-4xl w-full glass rounded-[2.5rem] overflow-hidden shadow-2xl transition-all duration-500 ${
-          isDarkMode ? "shadow-pink-500/10" : "bg-white/95"
-        }`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex flex-col lg:flex-row h-full">
-          {/* Left Side: The Image */}
-          <div className="lg:w-3/5 relative bg-black flex items-center justify-center p-4 lg:p-0">
-            <img
-              src={meme.displayImageUrl || meme.image_url || meme.image}
-              alt={meme.template_name}
-              className="w-full h-full object-contain max-h-[70vh] lg:max-h-screen"
-            />
-            {meme.isAIGenerated && (
-              <div className="absolute top-6 left-6 px-4 py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-black uppercase tracking-widest rounded-full shadow-2xl">
-                AI GEN
-              </div>
-            )}
-            
-            <button
-              onClick={onClose}
-              className="absolute top-6 right-6 lg:hidden w-10 h-10 bg-white/20 backdrop-blur-xl rounded-full flex items-center justify-center text-white text-xl font-bold"
-            >
-              ✕
-            </button>
-          </div>
+    <AnimatePresence>
+      {meme && (
+        <>
+          <motion.div
+            key="backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={onClose}
+            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md"
+          />
 
-          {/* Right Side: Info & Actions */}
-          <div className="lg:w-2/5 p-8 flex flex-col justify-between">
-            <div>
-              <div className="flex justify-between items-start mb-6">
-                <h3 className="text-3xl font-black italic gradient-text uppercase tracking-tight leading-none">
+          {/* Centered Modal Content */}
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 pointer-events-none">
+            <motion.div
+              key="modal"
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 30 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className={`
+                pointer-events-auto
+                relative w-full max-w-sm
+                rounded-[2.5rem]
+                overflow-hidden shadow-2xl
+                border border-white/10
+                flex flex-col
+                ${isDarkMode ? "bg-slate-900 shadow-pink-500/5" : "bg-white shadow-xl"}
+              `}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className={`px-6 py-4 flex items-center justify-between border-b ${isDarkMode ? "border-white/5" : "border-gray-100"}`}>
+                <h3 className="text-sm font-black italic gradient-text uppercase tracking-tight truncate pr-3 flex-1">
                   {meme.template_name || "Untitled"}
                 </h3>
-                <button
-                  onClick={onClose}
-                  className="hidden lg:flex w-10 h-10 glass rounded-full items-center justify-center hover:bg-white/10 transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
-
-              {/* Stats Grid */}
-              <div className="grid grid-cols-2 gap-4 mb-8">
-                <StatItem label="Views" value={meme.views || 0} icon="👁️" />
-                <StatItem label="Shares" value={meme.shares || 0} icon="📤" />
-                <StatItem label="Created" value={formatDate(meme.createdAt)} icon="📅" />
-                <StatItem label="Type" value={meme.isAIGenerated ? "AI Masterpiece" : "Template"} icon="✨" />
-              </div>
-
-              {meme.ai_concept && (
-                <div className="mb-8 p-6 glass rounded-2xl bg-gradient-to-br from-purple-500/5 to-pink-500/5 border border-purple-500/20">
-                  <p className="text-xs font-black uppercase tracking-widest opacity-50 mb-3 ml-1">AI Prompt / Concept</p>
-                  <p className="text-base font-medium italic opacity-80 leading-relaxed">
-                    "{meme.ai_concept}"
-                  </p>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {meme.isAIGenerated && (
+                    <span className="flex items-center gap-1 px-2 py-0.5 bg-purple-500/20 text-purple-400 text-[9px] font-black uppercase tracking-widest rounded-full border border-purple-500/20">
+                      <Sparkles size={8} /> AI
+                    </span>
+                  )}
+                  <button
+                    onClick={onClose}
+                    className={`p-2 rounded-full transition-colors ${isDarkMode ? "hover:bg-white/10 text-gray-400" : "hover:bg-gray-100 text-gray-400"}`}
+                  >
+                    <X size={20} />
+                  </button>
                 </div>
-              )}
-            </div>
+              </div>
 
-            <div className="space-y-4">
-              <motion.button
-                whileHover={{ scale: 1.02, translateY: -2 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => onShare(meme)}
-                className="w-full py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-3 transition-all hover:shadow-blue-500/20"
-              >
-                <span>📤</span> Share Meme
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.02, translateY: -2 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => onDownload(meme)}
-                className="w-full py-4 bg-gradient-to-r from-pink-500 to-rose-600 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-3 transition-all hover:shadow-pink-500/20"
-              >
-                <span>📥</span> Download High-Res
-              </motion.button>
-            </div>
+              {/* Scrollable Container (Safe for small devices) */}
+              <div className="overflow-y-auto max-h-[70vh]">
+                {/* Meme Image Area */}
+                <div className="relative w-full bg-black/40 flex items-center justify-center p-3">
+                  <img
+                    src={meme.displayImageUrl || meme.image_url || meme.image}
+                    alt={meme.template_name}
+                    className="w-full h-auto max-h-[320px] object-contain rounded-2xl shadow-lg"
+                  />
+                </div>
+
+                {/* Stats Section */}
+                <div className={`flex items-center gap-4 px-6 py-4 border-b text-[10px] font-black uppercase tracking-widest ${isDarkMode ? "border-white/5 text-white/30" : "border-gray-100 text-slate-400"}`}>
+                  <span className="flex items-center gap-1.5">
+                    <Eye size={13} className="text-cyan-400" />
+                    {(meme.views || 0).toLocaleString()}
+                  </span>
+                  <span className="flex items-center gap-1.5 border-l border-white/5 pl-3">
+                    <Share2 size={13} className="text-blue-400" />
+                    {(meme.shares || 0).toLocaleString()}
+                  </span>
+                  <span className="flex items-center gap-1.5 ml-auto opacity-60">
+                    <Calendar size={13} className="text-pink-400" />
+                    {formatDate ? formatDate(meme.createdAt) : ""}
+                  </span>
+                </div>
+
+                {/* Description / AI Prompt (Optional) */}
+                {meme.ai_concept && (
+                  <div className={`px-6 py-4 border-b text-xs italic leading-relaxed ${isDarkMode ? "border-white/5 text-white/50" : "border-gray-100 text-slate-500"}`}>
+                    "{meme.ai_concept}"
+                  </div>
+                )}
+              </div>
+
+              {/* Footer Actions - Fixed at bottom of modal */}
+              <div className="p-6 flex flex-wrap gap-2">
+                <motion.button
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => onShare(meme)}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                    isDarkMode
+                      ? "bg-white/5 hover:bg-white/10 text-white"
+                      : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                  }`}
+                >
+                  <Share2 size={16} /> Share
+                </motion.button>
+
+                <motion.button
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => onDownload(meme)}
+                  className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest bg-gradient-to-r from-pink-500 to-cyan-500 text-white transition-all shadow-lg shadow-pink-500/20"
+                >
+                  <Download size={16} /> Save
+                </motion.button>
+
+                {onDelete && (
+                  <motion.button
+                    whileTap={{ scale: 0.96 }}
+                    onClick={() => onDelete(meme)}
+                    className="flex items-center justify-center gap-1 px-4 py-3.5 rounded-2xl text-xs font-black text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-all border border-red-500/20"
+                  >
+                    <Trash2 size={16} />
+                  </motion.button>
+                )}
+              </div>
+            </motion.div>
           </div>
-        </div>
-      </motion.div>
-    </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 };
-
-const StatItem = ({ label, value, icon }) => (
-  <div className="glass p-3 rounded-2xl">
-    <div className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-1">{icon} {label}</div>
-    <div className="text-sm font-bold truncate">{value}</div>
-  </div>
-);
 
 export default MemeDetailModal;

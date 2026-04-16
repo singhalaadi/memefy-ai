@@ -12,7 +12,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className={`border-t py-10 px-6 transition-all duration-300 ${
+    <footer className={`hidden md:block border-t py-10 px-4 md:px-6 transition-all duration-300 ${
       isDarkMode 
         ? "bg-[#0d0d1a]/80 border-white/5 text-white" 
         : "bg-white border-gray-100 text-gray-900"
@@ -20,11 +20,11 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
         
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 group">
-          <motion.span whileHover={{ rotate: 360 }} transition={{ duration: 0.5 }} className="text-2xl">
+        <Link to="/" className="flex items-center gap-2 group flex-shrink-0 max-w-[fit-content]">
+          <motion.span whileHover={{ rotate: 360 }} transition={{ duration: 0.5 }} className="text-xl md:text-2xl">
             🚀
           </motion.span>
-          <span className="text-lg font-black gradient-text italic tracking-tight">MEMEFY-AI</span>
+          <span className="text-base md:text-lg font-black gradient-text italic tracking-tight whitespace-nowrap pr-2">MEMEFY-AI</span>
         </Link>
 
         {/* Nav Links */}

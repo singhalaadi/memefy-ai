@@ -1,51 +1,60 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { motion } from "framer-motion";
+import { Home, Sparkles, Image, BarChart3, User, LogIn } from "lucide-react";
 
 const BottomNav = () => {
   const { user } = useAuth();
   const location = useLocation();
 
   const navLinks = [
-    { label: "Home", path: "/", icon: "🏠" },
-    { label: "Generator", path: "/generator", icon: "🤖" },
-    { label: "Gallery", path: "/gallery", icon: "🎨" },
+    { label: "Home", path: "/", icon: Home },
+    { label: "Create", path: "/generator", icon: Sparkles },
+    { label: "Gallery", path: "/gallery", icon: Image },
     ...(user
       ? [
-          { label: "Dashboard", path: "/dashboard", icon: "📊" },
-          { label: "Profile", path: "/profile", icon: "👤" },
+          { label: "Stats", path: "/dashboard", icon: BarChart3 },
+          { label: "Profile", path: "/profile", icon: User },
         ]
-      : [{ label: "Login", path: "/login", icon: "🔑" }]),
+      : [{ label: "Login", path: "/login", icon: LogIn }]),
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[100] px-4 pb-6 pt-2 h-20">
-      <div className="glass h-full rounded-[1.5rem] flex items-center justify-around shadow-2xl border border-white/10 px-2 overflow-hidden relative">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
-        
+    <nav className="md:hidden fixed bottom-2 left-0 right-0 z-[100] flex justify-center px-2">
+      <div className="glass h-16 rounded-full flex items-center justify-between shadow-2xl border border-white/10 px-1 relative max-w-sm w-full gap-0.5">
         {navLinks.map((link) => {
           const isActive = location.pathname === link.path;
+          const Icon = link.icon;
+          
           return (
             <Link
               key={link.path}
               to={link.path}
-              className="relative flex flex-col items-center justify-center p-2 group"
+              className={`relative flex items-center justify-center transition-all duration-300 rounded-full px-3 py-2 ${
+                isActive 
+                  ? "bg-gradient-to-r from-pink-500/20 to-cyan-500/20 text-white flex-[1.5]" 
+                  : "text-gray-400 hover:text-white flex-1"
+              }`}
             >
+              <div className="flex items-center gap-2">
+                <Icon size={isActive ? 20 : 22} className={isActive ? "text-cyan-400" : ""} />
+                {isActive && (
+                  <motion.span 
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="text-xs font-bold whitespace-nowrap"
+                  >
+                    {link.label}
+                  </motion.span>
+                )}
+              </div>
+              
               {isActive && (
                 <motion.div
                   layoutId="bottom-nav-indicator"
-                  className="absolute inset-0 bg-white/5 rounded-2xl -z-10"
+                  className="absolute inset-0 border border-white/10 rounded-full -z-10"
                   transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                 />
-              )}
-              <span className={`text-2xl transition-transform duration-300 ${isActive ? 'scale-110 -translate-y-1' : 'opacity-60 group-hover:scale-110'}`}>
-                {link.icon}
-              </span>
-              <span className={`text-[10px] font-black uppercase tracking-widest mt-1 transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-0 scale-75'}`}>
-                {link.label}
-              </span>
-              {isActive && (
-                <div className="absolute -bottom-1 w-1 h-1 bg-gradient-to-r from-pink-500 to-cyan-500 rounded-full shadow-[0_0_8px_rgba(255,107,157,0.8)]" />
               )}
             </Link>
           );

@@ -8,6 +8,8 @@
 
 AI-powered meme generator with a custom-trained sentiment and toxicity model, real-time analytics, and a full-stack cloud deployment.
 
+**[Live Demo](https://memefy-ai.netlify.app/)**
+
 ---
 
 ## Features
@@ -33,6 +35,7 @@ AI-powered meme generator with a custom-trained sentiment and toxicity model, re
 | AI | Google Gemini 2.0 Flash, scikit-learn (TF-IDF + LogReg) |
 | Database | Firebase Firestore |
 | Auth | Firebase Authentication |
+| Media Storage | Cloudinary (Avatar Management) |
 | Meme Rendering | Imgflip API (proxied via backend) |
 
 ---
@@ -108,6 +111,8 @@ Frontend runs at `http://localhost:5173`
 | `VITE_FIREBASE_MEASUREMENT_ID` | Firebase Analytics measurement ID |
 | `VITE_GEMINI_API_KEY` | Google Gemini API key |
 | `VITE_BACKEND_API_URL` | URL of the FastAPI backend |
+| `VITE_CLOUDNARY_CLOUD_NAME` | Cloudinary cloud identifier |
+| `VITE_CLOUDNARY_UPLOAD_PRESET` | Cloudinary unsigned upload preset name |
 
 ### Backend (`backend/.env`)
 
@@ -120,9 +125,28 @@ Frontend runs at `http://localhost:5173`
 
 ---
 
+
 ## Deployment
 
-Deployment configuration will be added in a future update.
+### Frontend (Netlify)
+
+1.  **Connect Repo**: Import your repo from GitHub.
+2.  **Build Settings**:
+    *   **Base directory**: `frontend`
+    *   **Build command**: `npm run build`
+    *   **Publish directory**: `dist`
+3.  **Environment Variables**: Add all `VITE_*` variables from `frontend/.env.example` to the Netlify dashboard. Set `VITE_BACKEND_API_URL` to your Render URL.
+
+### Backend (Render)
+
+1.  **New Web Service**: Connect your repo.
+2.  **Build Settings**:
+    *   **Root directory**: `backend`
+    *   **Runtime**: `Python 3`
+    *   **Build command**: `pip install -r requirements.txt`
+    *   **Start command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+3.  **Environment Variables**: Add all variables from `backend/.env.example`. 
+    *   **`ALLOWED_ORIGINS`**: Set this to `http://localhost:5173,https://your-app.netlify.app`.
 
 ---
 
@@ -164,7 +188,7 @@ service cloud.firestore {
       allow update, delete: if request.auth != null
         && request.auth.uid == resource.data.user_id;
     }
-    match /profiles/{userId} {
+    match /users/{userId} {
       allow read, write: if request.auth != null
         && request.auth.uid == userId;
     }
@@ -192,11 +216,15 @@ memes/
   likes           number
   createdAt       timestamp
 
-profiles/
-  displayName     string
+users/
+  name            string
+  username        string    Unique handle (60-day cooldown)
   email           string
-  photoURL        string
+  avatar          string    Cloudinary URL
   createdAt       timestamp
+  provider        string    "google.com" | "password"
+  deactivated     boolean
+  lastUsernameChange timestamp
 ```
 
 ---

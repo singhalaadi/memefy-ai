@@ -5,7 +5,6 @@ import {
   query, 
   orderBy, 
   where,
-  getDoc,
   addDoc, 
   deleteDoc, 
   doc,
@@ -26,7 +25,6 @@ export const useMemes = (currentUser = null) => {
     fetchTemplates()
   }, [])
 
-  // Helper function to resolve image URLs (including locally stored ones)
   const resolveImageUrl = (meme) => {
     if (meme.isLocalImage && meme.image_url) {
       const storedImage = localStorage.getItem(`meme-image-${meme.image_url}`);
@@ -37,11 +35,9 @@ export const useMemes = (currentUser = null) => {
 
   const fetchMemes = async (userId = null) => {
     try {
-
       const memesRef = collection(db, 'memes')
       let q;
       
-      // Use your existing indexes
       if (userId) {
         q = query(memesRef, where('user_id', '==', userId), orderBy('createdAt', 'desc'))
       } else {
@@ -62,43 +58,32 @@ export const useMemes = (currentUser = null) => {
     }
   }
 
-
   const fetchTemplates = async () => {
     try {
       setTemplatesLoading(true)
-      const templates = await memeApiService.fetchTemplates()
-      setTemplates(templates)
-      
-      // Successfully loaded templates
+      const templatesList = await memeApiService.fetchTemplates()
+      setTemplates(templatesList)
     } catch (error) {
-      // Use fallback templates if API fails
       setTemplates(memeApiService.getFallbackTemplates())
     } finally {
       setTemplatesLoading(false)
     }
   }
 
-  const createMeme = async (memeData, currentUser = null) => {
-    // Real database creation only
+  const createMeme = async (memeData, user = null) => {
     try {
-
-      
       const memesRef = collection(db, 'memes')
-      
-
       let processedMemeData = { ...memeData };
       
-      // If image_url is too large (base64), create a reference instead
       if (processedMemeData.image_url && processedMemeData.image_url.length > 500000) {
-        // Store large images in browser storage or create a smaller reference
         const imageId = `meme-${Date.now()}`;
         localStorage.setItem(`meme-image-${imageId}`, processedMemeData.image_url);
         processedMemeData.image_url = imageId;
         processedMemeData.isLocalImage = true;
       }
       
-      if (!currentUser?.id && !currentUser?.uid) {
-        toast.error('Please sign in to create memes');
+      if (!user?.id && !user?.uid) {
+        toast.error('Authentication required to create memes');
         return null;
       }
       
@@ -129,15 +114,16 @@ export const useMemes = (currentUser = null) => {
       
       const newMeme = {
         ...cleanMemeData,
-        user_id: currentUser.uid || currentUser.id,
-        user_email: currentUser.email || '',
+        user_id: user.uid || user.id,
+        user_email: user.email || '',
         createdAt: serverTimestamp(),
         likes: 0,
         shares: 0,
         views: 0
       }
       const docRef = await addDoc(memesRef, newMeme)
-      toast.success('Meme created successfully! 🎉')
+      toast.success('Meme created successfully!')
+      
       const createdMeme = { 
         ...newMeme, 
         id: docRef.id, 
@@ -148,81 +134,40 @@ export const useMemes = (currentUser = null) => {
       
       return createdMeme
     } catch (error) {
-      // Handle specific Firebase permission errors
-      if (error?.code === 'permission-denied' || 
-          error?.message?.includes('Missing or insufficient permissions')) {
-        toast.error('Permission denied. Please sign in to create memes.');
-        return null;
+      if (error?.code === 'permission-denied' || error?.message?.includes('permissions')) {
+        toast.error('Permission denied. Please sign in again.');
+      } else {
+        toast.error('Failed to create meme.');
       }
-      
-      toast.error('Failed to create meme')
-      throw error
+      return null;
     }
   }
 
   const deleteMeme = async (memeId) => {
-    // First check what meme we're trying to delete from local state
     const memeToDelete = memes.find(meme => meme.id === memeId);
-    
     if (!memeToDelete) {
-      toast.error('Meme not found');
+      toast.error('Meme not found.');
       return;
     }
     
-    // More flexible user ID checking - prioritize uid which matches Firestore rules
     const userMatches = currentUser && (
       memeToDelete.user_id === currentUser.uid ||
-      memeToDelete.user_id === currentUser.id ||
-      memeToDelete.user_email === currentUser.email
+      memeToDelete.user_id === currentUser.id
     );
     
     if (!currentUser || !userMatches) {
-      toast.error('You can only delete your own memes');
+      toast.error('Unauthorized action.');
       return;
     }
     
-    
     try {
-      // Use getDocFromServer to force fresh data check
       const memeRef = doc(db, 'memes', memeId)
-      
-      // Try deletion directly - if it fails, we'll handle the error
       await deleteDoc(memeRef)
       
-      // Wait a moment for Firestore to process
-      await new Promise(resolve => setTimeout(resolve, 100));
-      try {
-        const verifyDoc = await getDoc(memeRef)
-        if (verifyDoc.exists()) {
-          toast.error('Deletion failed - please try again');
-          return;
-        } else {
-
-        }
-      } catch (verifyError) {
-        // If we get "not found" error during verification, that's good - means it's deleted
-
-      }
-      
-      setMemes(prevMemes => {
-        const filteredMemes = prevMemes.filter(meme => meme.id !== memeId);
-        return filteredMemes;
-      });
-      toast.success('Meme permanently deleted!')
-      
+      setMemes(prevMemes => prevMemes.filter(meme => meme.id !== memeId));
+      toast.success('Meme deleted.')
     } catch (error) {
-      if (error.code === 'permission-denied') {
-        toast.error('Permission denied - you can only delete your own memes');
-        return;
-      }
-      
-      if (error.code === 'not-found') {
-        setMemes(prevMemes => prevMemes.filter(meme => meme.id !== memeId));
-        toast.success('Meme removed!');
-        return;
-      }
-      
-      toast.error('Failed to delete meme: ' + error.message);
+      toast.error('Deletion failed.');
       throw error;
     }
   }
@@ -232,7 +177,7 @@ export const useMemes = (currentUser = null) => {
     templates,
     loading,
     templatesLoading,
-    createMeme: (memeData) => createMeme(memeData, currentUser), // Pass current user
+    createMeme: (memeData) => createMeme(memeData, currentUser),
     deleteMeme,
     refetch: fetchMemes,
     resolveImageUrl

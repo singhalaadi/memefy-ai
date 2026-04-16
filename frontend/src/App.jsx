@@ -1,12 +1,12 @@
 import { BrowserRouter as Router } from 'react-router-dom'
-import ConfigurationStatus from './components/common/ConfigurationStatus'
+import ScrollToTop from './components/common/ScrollToTop'
 import Layout from './components/layout/Layout'
 import AppRoutes from './routes/AppRoutes'
 
 function App() {
   return (
     <Router>
-      <ConfigurationStatus />
+      <ScrollToTop />
       <Layout>
         <AppRoutes />
       </Layout>

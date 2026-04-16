@@ -162,8 +162,8 @@ const Dashboard = () => {
           <div className="flex items-center gap-3 mb-4">
             <span className="text-3xl">👋</span>
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold gradient-text">
-                Welcome back, {user?.name || 'Creator'}!
+              <h1 className="text-2xl md:text-3xl font-bold gradient-text">
+                Welcome back, {user?.name?.split(' ')[0] || 'Creator'}!
               </h1>
             </div>
           </div>

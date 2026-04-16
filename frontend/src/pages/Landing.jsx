@@ -4,30 +4,31 @@ import { memeImages } from "../data/memeData";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 import SEO from "../components/common/SEO";
+import { Bot, Flame, Zap, Target, ArrowRight, Eye, TrendingUp } from "lucide-react";
 
 const Landing = () => {
   const { isDarkMode } = useTheme();
   const { user } = useAuth();
   const features = [
     {
-      emoji: "🤖",
+      icon: Bot,
       title: "AI Meme Master",
       description:
-        "Our AI knows every meme format from the classics to the latest TikTok trends",
+        "Our AI knows every meme format from the classics to the latest viral hits",
     },
     {
-      emoji: "🔥",
+      icon: TrendingUp,
       title: "Viral Potential",
       description:
         "Generate memes that are guaranteed to get those likes, shares, and reactions",
     },
     {
-      emoji: "⚡",
+      icon: Zap,
       title: "Instant Creation",
       description: "From idea to meme in seconds. No cap. 💯",
     },
     {
-      emoji: "🎯",
+      icon: Target,
       title: "Trend Tracker",
       description:
         "Stay ahead with real-time meme trends from Reddit, Twitter, and TikTok",
@@ -80,11 +81,6 @@ const Landing = () => {
             <h1 className="text-4xl sm:text-6xl md:text-8xl font-extrabold gradient-text mb-4 leading-tight">
               MEMEFY-AI
             </h1>
-            <div className="flex justify-center items-center gap-3 sm:gap-4 text-2xl sm:text-4xl md:text-6xl mb-4 sm:mb-6">
-              <span className="animate-bounce">🔥</span>
-              <span className="animate-pulse">💯</span>
-              <span className="animate-bounce delay-300">⚡</span>
-            </div>
           </motion.div>
 
           {/* Tagline */}
@@ -95,9 +91,8 @@ const Landing = () => {
             The ultimate AI meme generator for Gen-Z creators. 
             <br className="hidden sm:block" />
             <span className="gradient-text font-bold ml-2">
-              No cap, just pure viral content!{" "}
+              No cap, just pure viral content!
             </span>
-            <span className="font-bold">🚀</span>
           </motion.p>
 
           {/* CTA Buttons */}
@@ -129,7 +124,7 @@ const Landing = () => {
               className="inline-flex items-center gap-2 text-yellow-400 hover:text-yellow-300 font-semibold transition-colors"
             >
               <span>Check out viral memes</span>
-              <span className="animate-bounce">👀</span>
+              <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
             </Link>
           </motion.div>
         </motion.div>
@@ -149,10 +144,9 @@ const Landing = () => {
               className="glass p-6 text-center group hover:shadow-lg hover:shadow-pink-500/20 transition-all duration-300"
             >
               <div
-                className="text-4xl mb-4 animate-float"
-                style={{ animationDelay: `${index * 0.5}s` }}
+                className="flex justify-center text-cyan-400 mb-4"
               >
-                {feature.emoji}
+                <feature.icon size={40} />
               </div>
               <h3 className="text-xl font-bold mb-3 gradient-text">
                 {feature.title}
@@ -234,8 +228,8 @@ const Landing = () => {
               to="/gallery"
               className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-cyan-500 px-6 py-3 rounded-full font-bold text-white hover:from-cyan-500 hover:to-pink-500 transition-all duration-300 animate-pulse-glow"
             >
-              <span>See More Viral Memes</span>
-              <span className="animate-bounce">👀</span>
+              <span>Explore More Viral Memes</span>
+              <ArrowRight size={20} />
             </Link>
           </div>
         </motion.div>
@@ -249,16 +243,14 @@ const Landing = () => {
         >
           <div className="glass-dark p-8 rounded-3xl max-w-2xl mx-auto">
             <h2 className="text-3xl font-bold mb-4">
-              <span className="gradient-text">Ready to go viral? </span>
-              <span>📈</span>
+              <span className="gradient-text">Ready to go viral?</span>
             </h2>
             <p className="text-gray-400 mb-6">
-              Join thousands of creators making bank with AI-generated memes
+              Join thousands of creators shaping internet culture with AI-generated memes.
             </p>
-            <div className="flex justify-center gap-4">
-              <span className="text-2xl animate-bounce">🚀</span>
-              <span className="text-2xl animate-pulse">💸</span>
-              <span className="text-2xl animate-bounce delay-500">🎯</span>
+            <div className="flex justify-center items-center gap-4 text-cyan-400">
+               <Zap size={32} className="animate-pulse" />
+               <Flame size={32} className="animate-pulse" />
             </div>
           </div>
         </motion.div>

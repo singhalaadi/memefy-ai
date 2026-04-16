@@ -20,17 +20,17 @@
 
 .light {
   /* Light theme */
-  --bg-primary: #f0f9ff;
-  --bg-secondary: #e0e7ff;
+  --bg-primary: #f0f4f8;
+  --bg-secondary: #e2e8f0;
   --bg-tertiary: #f8fafc;
-  --text-primary: #1f2937;
-  --text-secondary: #4b5563;
-  --text-tertiary: #9ca3af;
-  --border-color: rgba(0, 0, 0, 0.1);
-  --glass-bg: rgba(255, 255, 255, 0.4);
-  --glass-border: rgba(0, 0, 0, 0.1);
-  --shadow-light: rgba(0, 0, 0, 0.1);
-  --accent-pink: #ec4899;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-tertiary: #64748b;
+  --border-color: rgba(0, 0, 0, 0.15);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.12);
+  --shadow-light: rgba(0, 0, 0, 0.08);
+  --accent-pink: #db2777;
   --accent-cyan: #0891b2;
 }
 
@@ -107,8 +107,8 @@ body {
 }
 
 .glass:hover {
-  background: rgba(26, 26, 46, 0.45);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--glass-bg);
+  border-color: var(--accent-pink);
   transform: translateY(-4px);
   box-shadow: 0 15px 35px var(--shadow-light);
 }
@@ -170,12 +170,13 @@ body {
 
 /* Enhanced gradient text for light mode */
 .light .gradient-text {
-  background: linear-gradient(45deg, var(--accent-pink), var(--accent-cyan), #f59e0b);
+  background: linear-gradient(45deg, var(--accent-pink), #7c3aed, var(--accent-cyan));
   background-size: 200% 200%;
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: gradient-move 3s ease infinite;
+  font-weight: 900;
 }
 
 /* Meme text overlay positioning */

@@ -25,7 +25,7 @@ const SEO = ({ title, description, keywords }) => {
     }
   }, [title, description, keywords]);
 
-  return null; // This component doesn't render anything
+  return null;
 };
 
 export default SEO;

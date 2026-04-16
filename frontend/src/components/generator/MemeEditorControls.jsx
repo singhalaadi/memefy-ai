@@ -40,7 +40,7 @@ const MemeEditorControls = ({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[minmax(380px,460px)_1fr] gap-6 items-start">
 
-      {/* ── LEFT: Sticky Live Preview ────────────────── */}
+      {/* Live Preview */}
       <div className="lg:sticky lg:top-20">
         <div className={`glass p-4 rounded-3xl transition-all duration-300 ${isDarkMode ? "" : "bg-white/90 shadow-lg border border-gray-100"}`}>
           <div className="flex items-center justify-between mb-3 px-1">
@@ -91,7 +91,7 @@ const MemeEditorControls = ({
         </div>
       </div>
 
-      {/* ── RIGHT: Stacked Controls ──────────────────── */}
+      {/* Stacked Controls */}
       <div className="space-y-5">
 
         {/* 1. Text Content */}
@@ -152,10 +152,12 @@ const MemeEditorControls = ({
                   <button
                     key={f.id}
                     onClick={() => setFontFamily(f.id)}
-                    className={`px-2 py-2 rounded-lg text-[10px] font-bold transition-all truncate ${
+                    className={`px-2 py-2.5 rounded-xl text-[10px] font-bold transition-all truncate border-2 ${
                       fontFamily === f.id
-                        ? "bg-gradient-to-r from-pink-500 to-cyan-500 text-white shadow-md"
-                        : isDarkMode ? "bg-white/5 hover:bg-white/10 text-gray-300" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                        ? "bg-gradient-to-r from-pink-600 to-purple-700 text-white border-transparent shadow-lg"
+                        : isDarkMode 
+                          ? "bg-gray-800/40 border-gray-700 hover:border-gray-500 text-gray-300" 
+                          : "bg-white border-gray-200 hover:border-pink-300 text-gray-700 shadow-sm"
                     }`}
                     style={{ fontFamily: f.font }}
                   >
@@ -173,10 +175,12 @@ const MemeEditorControls = ({
                   <button
                     key={effect.id}
                     onClick={() => setTextEffect(effect.id)}
-                    className={`py-2 rounded-lg text-xs font-bold transition-all ${
+                    className={`py-2.5 rounded-xl text-xs font-bold transition-all border-2 ${
                       textEffect === effect.id
-                        ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md"
-                        : isDarkMode ? "bg-white/5 hover:bg-white/10 text-gray-300" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                        ? "bg-gradient-to-r from-pink-600 to-purple-700 text-white border-transparent shadow-lg"
+                        : isDarkMode 
+                          ? "bg-gray-800/40 border-gray-700 hover:border-gray-500 text-gray-300" 
+                          : "bg-white border-gray-200 hover:border-pink-300 text-gray-700 shadow-sm"
                     }`}
                   >
                     {effect.name}
@@ -197,15 +201,26 @@ const MemeEditorControls = ({
                 </div>
               </div>
               <div className="flex-1">
-                <label className="block text-xs font-bold opacity-60 mb-2 px-1">Font Size</label>
-                <select value={fontSize} onChange={(e) => setFontSize(e.target.value)}
-                  className={`w-full p-2 px-3 rounded-lg text-xs font-bold ${isDarkMode ? "bg-white/5 text-white border border-white/10" : "bg-gray-100 text-gray-800 border border-gray-200"}`}>
-                  <option value="1rem">Small</option>
-                  <option value="1.5rem">Medium</option>
-                  <option value="2rem">Normal</option>
-                  <option value="2.5rem">Large</option>
-                  <option value="3rem">Huge</option>
-                </select>
+                <div className="relative group">
+                  <select 
+                    value={fontSize} 
+                    onChange={(e) => setFontSize(e.target.value)}
+                    className={`w-full p-2.5 px-4 rounded-xl text-xs font-black appearance-none cursor-pointer border-2 transition-all ${
+                      isDarkMode 
+                        ? "bg-gray-800/80 border-gray-700 focus:border-pink-500 text-white" 
+                        : "bg-white border-gray-200 focus:border-pink-500 text-gray-900 shadow-sm"
+                    }`}
+                  >
+                    <option value="1rem">Small 🤏</option>
+                    <option value="1.5rem">Medium 👌</option>
+                    <option value="2rem">Normal 👍</option>
+                    <option value="2.5rem">Large 💪</option>
+                    <option value="3rem">Huge 🚀</option>
+                  </select>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
+                    ▼
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -214,14 +229,14 @@ const MemeEditorControls = ({
               <div className={`p-4 rounded-xl border ${isDarkMode ? "bg-white/5 border-white/10" : "bg-gray-50 border-gray-200"}`}>
                 <div className="flex items-center justify-between mb-3">
                   <label className="text-xs font-bold opacity-60">Adjust Position</label>
-                  <div className={`flex rounded-lg p-1 gap-1 ${isDarkMode ? "bg-white/10" : "bg-gray-200"}`}>
+                  <div className={`flex rounded-lg p-1 gap-1 transition-colors duration-300 ${isDarkMode ? "bg-white/10" : "bg-gray-200 border border-gray-300 shadow-inner"}`}>
                     {["top", "bottom"].map((pos) => (
                       <button
                         key={pos}
                         onClick={() => setSelectedTextElement(pos)}
-                        className={`px-3 py-1 rounded-md text-[10px] uppercase font-bold transition-all ${
+                        className={`px-3 py-1 rounded-md text-[10px] uppercase font-black transition-all ${
                           selectedTextElement === pos
-                            ? isDarkMode ? "bg-gray-800 shadow-sm" : "bg-white shadow-sm"
+                            ? isDarkMode ? "bg-gray-800 shadow-sm text-white" : "bg-white shadow-md text-slate-900 border border-gray-100"
                             : "opacity-40"
                         }`}
                       >

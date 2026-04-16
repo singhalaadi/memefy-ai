@@ -8,6 +8,7 @@ import Gallery from '../pages/Gallery';
 import Generator from '../pages/Generator';
 import Dashboard from '../pages/Dashboard';
 import Profile from '../pages/Profile';
+import Settings from '../pages/Settings';
 
 const AppRoutes = () => {
   return (
@@ -17,30 +18,10 @@ const AppRoutes = () => {
       <Route path="/gallery" element={<Gallery />} />
       
       {/* Protected Routes */}
-      <Route
-        path="/generator"
-        element={
-          <ProtectedRoute>
-            <Generator />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/generator" element={<ProtectedRoute><Generator /></ProtectedRoute>} />
+      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+      <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
     </Routes>
   );
 };

@@ -3,9 +3,6 @@ class MemeApiService {
     this.backendUrl = import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:8000';
   }
 
-  /**
-   * Fetch templates via backend proxy
-   */
   async fetchTemplates() {
     try {
       const response = await fetch(`${this.backendUrl}/templates`);
@@ -18,10 +15,8 @@ class MemeApiService {
         throw new Error('Backend returned error during template fetch');
       }
 
-      // Transform the Imgflip API response to match our expected format
       return this.transformTemplates(data.templates);
     } catch (error) {
-      console.error('Template fetch failed, using fallbacks:', error);
       return this.getFallbackTemplates();
     }
   }
@@ -57,9 +52,6 @@ class MemeApiService {
     ];
   }
 
-  /**
-   * Generate AI-powered meme using your trained backend model
-   */
   async generateAIMeme(idea = null, caption = null, templateId = null, texts = null) {
     try {
       const response = await fetch(`${this.backendUrl}/generate-meme`, {

@@ -1,23 +1,34 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 import { demoMemes } from "../data/memeData";
 import SEO from "../components/common/SEO";
+import { Search, Globe, Flame, Eye, Heart, Share2, Download, X, Layers } from "lucide-react";
+
 
 const Gallery = () => {
   const { isDarkMode } = useTheme();
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [favorites, setFavorites] = useState(() => {
-    // Load user-specific favorites from localStorage
-  const userKey = `memeFavorites_${user?.id || "anonymous"}`;
-  const savedFavorites = localStorage.getItem(userKey);    
-  return savedFavorites ? new Set(JSON.parse(savedFavorites)) : new Set();
+    const userKey = `memeFavorites_${user?.id || "anonymous"}`;
+    const savedFavorites = localStorage.getItem(userKey);    
+    return savedFavorites ? new Set(JSON.parse(savedFavorites)) : new Set();
   });
   const [selectedMeme, setSelectedMeme] = useState(null);
+
+  useEffect(() => {
+    const memeId = searchParams.get("meme");
+    if (memeId) {
+      const found = demoMemes.find((m) => String(m.id) === String(memeId));
+      if (found) setSelectedMeme({ ...found, author: "Anonymous" });
+    }
+  }, [searchParams]);
 
   // Refresh favorites when user changes
   useEffect(() => {
@@ -59,10 +70,10 @@ const Gallery = () => {
     const newFavorites = new Set(favorites);
     if (newFavorites.has(memeId)) {
       newFavorites.delete(memeId);
-      toast.success("Removed from favorites 💔");
+      toast.success("Removed from favorites");
     } else {
       newFavorites.add(memeId);
-      toast.success("Added to favorites 💖");
+      toast.success("Added to favorites");
     }
     setFavorites(newFavorites);
     // Persist to user-specific localStorage
@@ -71,19 +82,35 @@ const Gallery = () => {
   };
 
   const handleShare = async (meme) => {
+    // Build a deep-link URL that opens this specific meme
+    const memeUrl = `${window.location.origin}/gallery?meme=${meme.id}`;
+    const shareText = `🔥 Check out this meme: "${meme.title}" — made with Memefy AI!`;
+
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: meme.title,
-          text: `Check out this viral meme: ${meme.title}`,
-          url: window.location.href,
-        });
+        // Try to share the actual image blob for a richer share (WhatsApp, etc.)
+        if (meme.imageUrl) {
+          try {
+            const res = await fetch(meme.imageUrl);
+            const blob = await res.blob();
+            const file = new File([blob], "meme.jpg", { type: blob.type });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+              await navigator.share({ files: [file], title: meme.title, text: shareText });
+              return;
+            }
+          } catch (_) {
+            // Image fetch failed, fall through to URL share
+          }
+        }
+        // Fallback: share URL
+        await navigator.share({ title: meme.title, text: shareText, url: memeUrl });
       } catch (error) {
-
+        if (error.name !== "AbortError") toast.error("Share failed");
       }
     } else {
-      navigator.clipboard.writeText(window.location.href);
-      toast.success("Link copied to clipboard! 📋");
+      // Desktop fallback: copy deep link
+      navigator.clipboard.writeText(memeUrl);
+      toast.success("Meme link copied! 🔗");
     }
   };
 
@@ -104,8 +131,8 @@ const Gallery = () => {
           <h1 className="text-5xl md:text-6xl font-bold gradient-text mb-4">
             Viral Meme Gallery
           </h1>
-          <p className="text-xl text-gray-400 mb-8">
-            The freshest memes straight from the internet's finest creators 🔥
+          <p className="text-xl text-gray-400 mb-8 flex items-center justify-center gap-2">
+            The freshest memes straight from the internet's finest creators <Flame size={50} className="text-orange-500 animate-pulse" />
           </p>
 
           {/* Search and Filter */}
@@ -113,13 +140,13 @@ const Gallery = () => {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search memes... 🔍"
+                placeholder="Search memes..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="glass px-6 py-3 pr-12 rounded-full text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 w-80"
               />
-              <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-xl">
-                🔍
+              <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                <Search size={20} />
               </span>
             </div>
 
@@ -128,13 +155,14 @@ const Gallery = () => {
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-full font-medium transition-all duration-300 ${
+                  className={`px-4 py-2 rounded-full font-medium transition-all duration-300 flex items-center gap-2 ${
                     selectedCategory === category
                       ? "bg-gradient-to-r from-pink-500 to-cyan-500 text-white"
                       : "glass text-gray-300 hover:text-white hover:bg-white/10"
                   }`}
                 >
-                  {category === "all" ? "🌍 All" : `#${category}`}
+                  {category === "all" ? <Globe size={16} /> : null}
+                  {category === "all" ? "All" : `#${category}`}
                 </button>
               ))}
             </div>
@@ -168,15 +196,15 @@ const Gallery = () => {
                 />
                 <div className="hidden w-full h-full items-center justify-center bg-gradient-to-br from-pink-500/20 to-cyan-500/20">
                   <div className="text-center">
-                    <div className="text-6xl mb-4">🎭</div>
+                    <div className="text-cyan-400 mb-4"><Layers size={64} /></div>
                     <p className="text-lg font-bold">{meme.title}</p>
                   </div>
                 </div>
 
                 {/* Overlay */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                  <span className="text-white font-bold text-lg bg-black/50 px-4 py-2 rounded-full backdrop-blur">
-                    Click to view 👀
+                  <span className="text-white font-bold text-sm bg-black/50 px-4 py-2 rounded-full backdrop-blur flex items-center gap-2">
+                    <Eye size={16} /> View Meme
                   </span>
                 </div>
               </div>
@@ -226,7 +254,7 @@ const Gallery = () => {
                           : "text-gray-400 hover:text-red-400 hover:bg-red-500/20"
                       }`}
                     >
-                      {favorites.has(meme.id) ? "💖" : "🤍"}
+                      <Heart size={18} fill={favorites.has(meme.id) ? "currentColor" : "none"} />
                     </button>
                     <button
                       onClick={(e) => {
@@ -235,7 +263,7 @@ const Gallery = () => {
                       }}
                       className="p-2 rounded-full text-gray-400 hover:text-cyan-400 hover:bg-cyan-500/20 transition-all duration-300"
                     >
-                      🚀
+                      <Share2 size={18} />
                     </button>
                   </div>
                 </div>
@@ -251,7 +279,7 @@ const Gallery = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <div className="text-6xl mb-4">😅</div>
+            <div className="text-gray-500 flex justify-center mb-4"><Search size={64} /></div>
             <h3 className="text-2xl font-bold gradient-text mb-2">
               No memes found
             </h3>
@@ -275,7 +303,7 @@ const Gallery = () => {
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.8, opacity: 0 }}
-                className="glass max-w-2xl w-full rounded-3xl overflow-hidden"
+                className="glass max-w-lg w-full rounded-3xl overflow-hidden shadow-2xl border border-white/10"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="relative">
@@ -298,7 +326,7 @@ const Gallery = () => {
                     onClick={() => setSelectedMeme(null)}
                     className="absolute top-4 right-4 p-2 bg-black/50 text-white rounded-full backdrop-blur hover:bg-black/70 transition-colors"
                   >
-                    ✕
+                    <X size={20} />
                   </button>
                 </div>
 
@@ -323,37 +351,41 @@ const Gallery = () => {
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <div className="flex gap-6 text-gray-400">
-                      <span className="flex items-center gap-2">
-                        🔥{" "}
-                        <strong>{selectedMeme.likes.toLocaleString()}</strong>{" "}
-                        likes
+                    <div className="flex gap-4 text-xs text-gray-400 uppercase tracking-wider font-bold">
+                      <span className="flex items-center gap-1">
+                        <Flame size={14} className="text-orange-500" />
+                        {selectedMeme.likes.toLocaleString()}
                       </span>
-                      <span className="flex items-center gap-2">
-                        👀{" "}
-                        <strong>{selectedMeme.views.toLocaleString()}</strong>{" "}
-                        views
+                      <span className="flex items-center gap-1">
+                        <Eye size={14} className="text-cyan-400" />
+                        {selectedMeme.views.toLocaleString()}
                       </span>
                     </div>
 
-                    <div className="flex gap-3">
+                    <div className="flex gap-2">
                       <button
                         onClick={() => handleFavorite(selectedMeme.id)}
-                        className={`px-4 py-2 rounded-full font-medium transition-all duration-300 ${
+                        className={`p-2.5 rounded-full transition-all duration-300 ${
                           favorites.has(selectedMeme.id)
                             ? "bg-red-500/20 text-red-400"
-                            : "bg-gray-500/20 text-gray-400 hover:bg-red-500/20 hover:text-red-400"
+                            : "bg-white/5 text-gray-400 hover:bg-red-500/20 hover:text-red-400"
                         }`}
+                        title="Favorite"
                       >
-                        {favorites.has(selectedMeme.id)
-                          ? "💖 Favorited"
-                          : "🤍 Favorite"}
+                        <Heart size={20} fill={favorites.has(selectedMeme.id) ? "currentColor" : "none"} />
                       </button>
                       <button
                         onClick={() => handleShare(selectedMeme)}
-                        className="px-4 py-2 bg-cyan-500/20 text-cyan-400 rounded-full font-medium hover:bg-cyan-500/30 transition-all duration-300"
+                        className="p-2.5 bg-cyan-500/20 text-cyan-400 rounded-full hover:bg-cyan-500/30 transition-all duration-300"
+                        title="Share"
                       >
-                        🚀 Share
+                        <Share2 size={20} />
+                      </button>
+                      <button
+                        className="p-2.5 bg-white/5 text-gray-400 rounded-full hover:bg-white/10 transition-all duration-300"
+                        title="Download"
+                      >
+                        <Download size={20} />
                       </button>
                     </div>
                   </div>

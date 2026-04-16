@@ -82,22 +82,22 @@ def sentiment_label(prob):
 def gemini_prompt(idea, box_count=1):
     box_guidelines = ""
     if box_count == 2:
-        box_guidelines = "Format your response as 'BOX1: [the setup/first situation] | BOX2: [the punchline/reaction]' to match the 2 top/bottom boxes of the meme."
+        box_guidelines = "You MUST format your response exactly as 'BOX1: [setup] | BOX2: [punchline]'. Do not provide any other text."
     elif box_count > 2:
-        box_guidelines = f"Format your response by splitting the idea into {box_count} distinct parts using 'BOX1:', 'BOX2:', etc. separated by '|'."
+        box_guidelines = f"You MUST split the idea into {box_count} parts using 'BOX1:', 'BOX2:', etc. separated by '|'. No other text."
     else:
         box_guidelines = "Keep it a single short, punchy sentence."
 
     return f"""
-You are a master meme creator who understands viral trends, Gen-Z humor, and internet culture.
-Generate a meme caption for the given idea. 
+You are a master meme creator. Generate a meme caption for the given idea. 
 
 Style: Hinglish + modern internet slang (e.g., 'vibe is real', 'no cap', 'literally me', 'POV').
 Text Structure: {box_guidelines}
 
 Rules:
-- Stay faithful to the idea.
-- Funny and relatable.
+- High humor factor.
+- Relatable to Gen-Z/Millennials.
+- If multiple boxes are requested, ensure the split makes sense for the template.
 - NO generic intros like "Caption:".
 - Output only the text for the boxes.
 
@@ -134,7 +134,7 @@ def generate_safe_caption(idea, box_count=1, attempts=3):
     return idea, 0.1
 
 def fit_caption_to_boxes(generated_text, box_count):
-    # If the AI followed BOX structure, parse it
+    # Standard format: BOX1: ... | BOX2: ...
     if "|" in generated_text and "BOX1" in generated_text:
         parts = []
         for i in range(1, box_count + 1):
@@ -146,21 +146,21 @@ def fit_caption_to_boxes(generated_text, box_count):
                 parts.append("")
         return parts
     
-    # Fallback: Split by lines or simple split
+    # Fallback 1: Text contains vs (common for 2 boxes)
+    if box_count == 2 and " vs " in generated_text.lower():
+        p = re.split(r"\s+vs\s+", generated_text, flags=re.IGNORECASE)
+        return [p[0], p[1]] if len(p) == 2 else [generated_text, ""]
+
+    # Fallback 2: General split
     if box_count == 1:
         return [generated_text]
     
-    # Clean up any leftover BOX tags if present but unformatted
-    clean_text = re.sub(r'BOX\d+:\s*', '', generated_text, flags=re.IGNORECASE)
-    
-    if box_count == 2:
-        # Try to find a logical split point
-        if " vs " in clean_text.lower():
-            p = re.split(r"\s+vs\s+", clean_text, flags=re.IGNORECASE)
-            return [p[0], p[1]] if len(p) == 2 else ["", clean_text]
-        return ["", clean_text]
-        
-    return [clean_text] + [""] * (box_count - 1)
+    # Fallback 3: If no markers found for multi-box, put all in BOX1 (usually the theme)
+    # instead of BOX2 (usually the reaction). This fixes the "empty card" issue.
+    clean_text = re.sub(r'BOX\d+:\s*', '', generated_text, flags=re.IGNORECASE).strip()
+    res = [""] * box_count
+    res[0] = clean_text
+    return res
 
 def create_meme(template_id, captions):
     payload = {
