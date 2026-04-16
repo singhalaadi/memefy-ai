@@ -1,35 +1,28 @@
 // Meme Template API Service using Imgflip API
 const IMGFLIP_API_BASE_URL = 'https://api.imgflip.com';
-
 class MemeApiService {
   constructor() {
-    console.log('Using Imgflip API for meme templates');
-  }
 
+  }
   async fetchTemplates() {
     try {
       const url = `${IMGFLIP_API_BASE_URL}/get_memes`;
-      
-      console.log('Fetching templates from Imgflip API:', url);
-
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      
+
       if (!data.success) {
         throw new Error('Imgflip API returned error: ' + data.error_message);
       }
-      
-      console.log(`Successfully fetched ${data.data.memes.length} templates from Imgflip API`);
-      
+
       // Transform the Imgflip API response to match our expected format
       return this.transformImgflipTemplates(data.data.memes);
     } catch (error) {
-      console.error('Error fetching templates from Imgflip API:', error.message);
+
       // Return fallback templates if API fails
       return this.getFallbackTemplates();
     }
@@ -60,7 +53,7 @@ class MemeApiService {
         height: template.height || 500
       }));
     }
-    
+
     // If data has templates property
     if (apiData.templates) {
       return apiData.templates.map((template, index) => ({
@@ -79,46 +72,46 @@ class MemeApiService {
 
   categorizeTemplate(name) {
     if (!name) return 'All';
-    
+
     const lowerName = name.toLowerCase();
-    
+
     // Popular memes
-    if (lowerName.includes('drake') || lowerName.includes('distracted boyfriend') || 
-        lowerName.includes('woman yelling at cat') || lowerName.includes('two buttons') ||
-        lowerName.includes('success kid') || lowerName.includes('bad luck brian') ||
-        lowerName.includes('overly attached girlfriend')) {
+    if (lowerName.includes('drake') || lowerName.includes('distracted boyfriend') ||
+      lowerName.includes('woman yelling at cat') || lowerName.includes('two buttons') ||
+      lowerName.includes('success kid') || lowerName.includes('bad luck brian') ||
+      lowerName.includes('overly attached girlfriend')) {
       return 'Popular';
     }
-    
+
     // Classic memes
-    if (lowerName.includes('expanding brain') || lowerName.includes('change my mind') || 
-        lowerName.includes('this is fine') || lowerName.includes('philosoraptor') ||
-        lowerName.includes('ancient aliens') || lowerName.includes('y u no') ||
-        lowerName.includes('first world problems')) {
+    if (lowerName.includes('expanding brain') || lowerName.includes('change my mind') ||
+      lowerName.includes('this is fine') || lowerName.includes('philosoraptor') ||
+      lowerName.includes('ancient aliens') || lowerName.includes('y u no') ||
+      lowerName.includes('first world problems')) {
       return 'Classic';
     }
-    
+
     // Gaming memes
-    if (lowerName.includes('mario') || lowerName.includes('pokemon') || 
-        lowerName.includes('gaming') || lowerName.includes('minecraft') ||
-        lowerName.includes('gamer')) {
+    if (lowerName.includes('mario') || lowerName.includes('pokemon') ||
+      lowerName.includes('gaming') || lowerName.includes('minecraft') ||
+      lowerName.includes('gamer')) {
       return 'Gaming';
     }
-    
+
     // Reaction memes
-    if (lowerName.includes('reaction') || lowerName.includes('face you make') || 
-        lowerName.includes('surprised pikachu') || lowerName.includes('hide the pain') ||
-        lowerName.includes('awkward') || lowerName.includes('facepalm')) {
+    if (lowerName.includes('reaction') || lowerName.includes('face you make') ||
+      lowerName.includes('surprised pikachu') || lowerName.includes('hide the pain') ||
+      lowerName.includes('awkward') || lowerName.includes('facepalm')) {
       return 'Reaction';
     }
-    
+
     // Trending (newer/popular templates)
-    if (lowerName.includes('stonks') || lowerName.includes('panik') || 
-        lowerName.includes('kalm') || lowerName.includes('chad') ||
-        lowerName.includes('wojak') || lowerName.includes('pepe')) {
+    if (lowerName.includes('stonks') || lowerName.includes('panik') ||
+      lowerName.includes('kalm') || lowerName.includes('chad') ||
+      lowerName.includes('wojak') || lowerName.includes('pepe')) {
       return 'Trending';
     }
-    
+
     return 'Popular';
   }
 
@@ -215,15 +208,15 @@ class MemeApiService {
       };
 
       const response = await fetch(url, options);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('Error generating meme:', error);
+
       throw error;
     }
   }

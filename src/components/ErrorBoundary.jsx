@@ -11,7 +11,10 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo)
+    // Only log non-Firebase errors to avoid console spam
+    if (!error?.message?.includes('Firebase') && !error?.message?.includes('index')) {
+      console.error('Error caught by boundary:', error, errorInfo)
+    }
   }
 
   render() {

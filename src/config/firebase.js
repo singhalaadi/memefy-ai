@@ -38,4 +38,7 @@ export const storage = getStorage(app)
 // Only initialize analytics if measurement ID is provided
 export const analytics = firebaseConfig.measurementId ? getAnalytics(app) : null
 
+// Export function to get Firebase app instance
+export const getFirebaseApp = () => app
+
 export default app

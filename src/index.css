@@ -177,6 +177,37 @@ body {
   animation: gradient-move 3s ease infinite;
 }
 
+/* Meme text overlay positioning */
+.meme-text-overlay {
+  position: absolute;
+  max-width: 90%;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  font-weight: 700;
+  text-transform: uppercase;
+  z-index: 5;
+  pointer-events: none;
+  line-height: 1.1;
+  text-align: center;
+  transform: translate(-50%, -50%);
+  padding: 0.25rem;
+}
+
+/* Responsive text sizing for memes */
+@media (max-width: 640px) {
+  .meme-text-overlay {
+    font-size: 1.2rem !important;
+    max-width: 85%;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .meme-text-overlay {
+    font-size: 1.5rem !important;
+    max-width: 88%;
+  }
+}
+
 /* Smooth transitions for all elements */
 * {
   transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
@@ -189,4 +220,15 @@ body {
 
 .light .bg-gradient-to-r {
   transition: all 0.3s ease;
+}
+
+/* Better mobile responsive utilities */
+@media (max-width: 640px) {
+  .mobile-stack {
+    flex-direction: column !important;
+  }
+  
+  .mobile-full {
+    width: 100% !important;
+  }
 }

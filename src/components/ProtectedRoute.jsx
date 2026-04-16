@@ -1,22 +1,15 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Box, CircularProgress } from "@mui/material";
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="100vh"
-        sx={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}
-      >
-        <CircularProgress sx={{ color: "white" }} />
-      </Box>
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-blue-500 to-purple-600">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+      </div>
     );
   }
 

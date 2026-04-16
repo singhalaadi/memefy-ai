@@ -25,16 +25,22 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const demoUser = localStorage.getItem("demoUser");
-    if (demoUser) {
+    if (typeof window !== 'undefined') {
       try {
-        const parsedDemoUser = JSON.parse(demoUser);
-        setUser(parsedDemoUser);
-        setLoading(false);
-        return;
+        const demoUser = localStorage.getItem("demoUser");
+        if (demoUser) {
+          try {
+            const parsedDemoUser = JSON.parse(demoUser);
+            setUser(parsedDemoUser);
+            setLoading(false);
+            return;
+          } catch (error) {
+            console.error('Error parsing demo user:', error);
+            localStorage.removeItem("demoUser");
+          }
+        }
       } catch (error) {
-        console.error("Error parsing demo user:", error);
-        localStorage.removeItem("demoUser");
+        console.error('Error accessing localStorage:', error);
       }
     }
 
@@ -53,6 +59,9 @@ export const AuthProvider = ({ children }) => {
 
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
+        console.log("Firebase user object:", firebaseUser);
+        console.log("Photo URL:", firebaseUser.photoURL);
+        
         const user = {
           id: firebaseUser.uid,
           name: firebaseUser.displayName || "Meme Master",
@@ -61,6 +70,7 @@ export const AuthProvider = ({ children }) => {
           isPremium: false, 
           createdAt: firebaseUser.metadata.creationTime,
         };
+        console.log("Processed user object:", user);
         setUser(user);
 
         localStorage.removeItem("demoUser");
@@ -107,7 +117,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signOut = async () => {
-    // Handle demo user logout
+
     const demoUser = localStorage.getItem("demoUser");
     if (demoUser) {
       localStorage.removeItem("demoUser");

@@ -84,17 +84,35 @@ src/
 
 ## 🤖 AI Features
 
+### Firebase AI (Gemini)
 - **Smart Text Generation**: Generate meme text from concepts
 - **Template Suggestions**: AI recommends templates based on your idea
 - **Text Improvement**: Enhance existing text for better impact
 - **Concept-to-Meme**: Describe your idea, get complete meme suggestions
 
+### Magic Hour AI Integration 🪄
+- **Complete AI Meme Generation**: Input a concept, get a fully generated meme with text
+- **Professional Templates**: Access to popular templates like Drake, Galaxy Brain, Two Buttons
+- **Smart Template Selection**: AI chooses the best template for your concept
+- **High-Quality Output**: Professional meme images ready for sharing
+
+#### Setting up Magic Hour AI:
+1. Sign up at [Magic Hour AI](https://magichour.ai/)
+2. Get your API key from [Developer Hub](https://magichour.ai/developer?tab=api-keys)
+3. Add to your `.env` file:
+   ```env
+   VITE_MAGIC_HOUR_API_KEY=your-magic-hour-api-key-here
+   ```
+4. Each AI meme generation costs 10 credits on Magic Hour
+
+**Pricing**: Magic Hour offers free tier with limited credits, and paid plans starting from ₹833/month
+
 ## 🛠️ Tech Stack
 
 - **Frontend**: React 18, Vite, Tailwind CSS, Framer Motion
 - **Backend**: Firebase (Auth, Firestore, Functions)
-- **AI**: Firebase Generative AI, Gemini
-- **APIs**: Imgflip (templates), HTML2Canvas (export)
+- **AI**: Firebase Generative AI (Gemini), Magic Hour AI
+- **APIs**: Imgflip (templates), Magic Hour AI (meme generation), HTML2Canvas (export)
 
 ## 🚀 Deployment
 

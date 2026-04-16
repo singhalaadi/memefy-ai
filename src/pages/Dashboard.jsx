@@ -1,52 +1,103 @@
-import React from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import { useAnalytics } from '../hooks/useAnalytics'
+import { useMemes } from '../hooks/useMemes'
 
 const Dashboard = () => {
   const { user } = useAuth()
   const { isDarkMode } = useTheme()
   const { analytics, loading } = useAnalytics(user?.id)
+  const { memes } = useMemes()
   const isDemoUser = user && localStorage.getItem('demoUser')
+  
+  // Calculate actual user memes count and stats
+  const userMemes = memes.filter(meme => {
+    // In demo mode, count all demo memes for this user
+    if (isDemoUser) {
+      return meme.user_id === user?.id || meme.id?.startsWith('demo-');
+    }
+    return meme.user_id === user?.id;
+  });
+  
+  const userMemesCount = userMemes.length
+  const aiGeneratedCount = userMemes.filter(meme => meme.isAIGenerated).length
+  const manuallyCreatedCount = userMemesCount - aiGeneratedCount
+  const totalViews = userMemes.reduce((sum, meme) => sum + (meme.views || 0), 0)
+  const totalShares = userMemes.reduce((sum, meme) => sum + (meme.shares || 0), 0)
+  const totalCreditsUsed = userMemes.reduce((sum, meme) => sum + (meme.credits_used || 0), 0)
 
   const stats = [
     {
       icon: '🎨',
       title: 'Memes Created',
-      value: analytics?.totalMemes || 0,
+      value: userMemesCount,
       color: 'from-pink-500 to-red-500',
       description: 'Total memes in your collection'
     },
     {
       icon: '👁️',
       title: 'Total Views',
-      value: (analytics?.totalViews || 0).toLocaleString(),
+      value: totalViews.toLocaleString(),
       color: 'from-cyan-500 to-blue-500',
       description: 'People who viewed your memes'
     },
     {
       icon: '📤',
       title: 'Shares',
-      value: analytics?.totalShares || 0,
+      value: totalShares,
       color: 'from-green-500 to-emerald-500',
       description: 'Times your memes were shared'
     },
     {
       icon: '🔥',
       title: 'Trending Score',
-      value: Math.floor(Math.random() * 100) + 1, // Mock trending score
+      value: Math.min(Math.floor((totalViews + totalShares * 5) / Math.max(userMemesCount, 1)), 100),
       color: 'from-orange-500 to-yellow-500',
       description: 'Your viral potential rating'
     }
   ]
 
-  const recentActivity = [
-    { action: 'Created new meme', meme: 'Distracted Boyfriend', time: '2 hours ago', icon: '🎨' },
-    { action: 'Meme went viral', meme: 'Drake Pointing', time: '1 day ago', icon: '🔥' },
-    { action: 'Shared to gallery', meme: 'Woman Yelling at Cat', time: '2 days ago', icon: '📤' },
-    { action: 'Received 100 views', meme: 'This is Fine', time: '3 days ago', icon: '👁️' }
-  ]
+  // Generate recent activity from actual user memes
+  const getRecentActivity = () => {
+    if (userMemes.length === 0) {
+      return [
+        { action: 'Welcome to MEMEFY AI!', meme: 'Start creating memes', time: 'Just now', icon: '�' },
+        { action: 'Explore templates', meme: 'Generator ready', time: 'Now', icon: '🤖' },
+      ];
+    }
+
+    const sortedMemes = userMemes
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 4);
+
+    return sortedMemes.map(meme => {
+      const createdDate = new Date(meme.createdAt);
+      const now = new Date();
+      const diffMs = now - createdDate;
+      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      
+      let timeAgo;
+      if (diffDays > 0) {
+        timeAgo = `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+      } else if (diffHours > 0) {
+        timeAgo = `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+      } else {
+        timeAgo = 'Just now';
+      }
+
+      return {
+        action: meme.isAIGenerated ? 'Generated AI meme' : 'Created new meme',
+        meme: meme.template_name || 'Custom Meme',
+        time: timeAgo,
+        icon: meme.isAIGenerated ? '🤖' : '🎨',
+        isAI: meme.isAIGenerated
+      };
+    });
+  };
+
+  const recentActivity = getRecentActivity();
 
   const quickActions = [
     { title: 'Create New Meme', icon: '🎨', href: '/generator', color: 'from-pink-500 to-purple-500' },
@@ -123,6 +174,38 @@ const Dashboard = () => {
           ))}
         </div>
 
+        {/* AI Meme Breakdown */}
+        {userMemesCount > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className={`glass rounded-xl p-6 mb-8 ${
+              isDarkMode ? '' : 'bg-white/90 border border-gray-100'
+            }`}
+          >
+            <h2 className="text-xl font-bold mb-4 gradient-text flex items-center gap-2">
+              🤖 AI vs Manual Creation
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-lg">
+                <div className="text-2xl font-bold text-purple-500">{aiGeneratedCount}</div>
+                <div className="text-sm opacity-80">AI Generated</div>
+              </div>
+              <div className="text-center p-4 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-lg">
+                <div className="text-2xl font-bold text-blue-500">{manuallyCreatedCount}</div>
+                <div className="text-sm opacity-80">Manually Created</div>
+              </div>
+              <div className="text-center p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-lg">
+                <div className="text-2xl font-bold text-green-500">
+                  {userMemesCount > 0 ? Math.round((aiGeneratedCount / userMemesCount) * 100) : 0}%
+                </div>
+                <div className="text-sm opacity-80">AI Powered</div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Quick Actions */}
           <motion.div
@@ -186,11 +269,18 @@ const Dashboard = () => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.4, delay: index * 0.1 }}
-                      className="flex items-center gap-4 p-3 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors duration-200"
+                      className={`flex items-center gap-4 p-3 rounded-xl transition-colors duration-200 ${
+                        activity.isAI 
+                          ? 'bg-gradient-to-r from-purple-500/5 to-pink-500/5 hover:from-purple-500/10 hover:to-pink-500/10 border border-purple-500/20'
+                          : 'hover:bg-black/5 dark:hover:bg-white/5'
+                      }`}
                     >
                       <div className="text-2xl">{activity.icon}</div>
                       <div className="flex-1">
-                        <p className="font-medium">{activity.action}</p>
+                        <p className={`font-medium ${activity.isAI ? 'text-purple-600 dark:text-purple-400' : ''}`}>
+                          {activity.action}
+                          {activity.isAI && <span className="ml-2 text-xs bg-purple-500/20 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded-full">AI</span>}
+                        </p>
                         <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                           {activity.meme} • {activity.time}
                         </p>
@@ -246,4 +336,4 @@ const Dashboard = () => {
   )
 }
 
-export default Dashboard
+export default Dashboard;

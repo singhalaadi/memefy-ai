@@ -8,6 +8,7 @@ export default defineConfig({
     exclude: ['lucide-react'],
   },
   build: {
+    target: 'es2022',
     outDir: 'dist',
     assetsDir: 'assets',
     rollupOptions: {
@@ -16,5 +17,8 @@ export default defineConfig({
       },
     },
   },
-  base: './',
+  esbuild: {
+    target: 'es2022',
+  },
+  base: '/',
 });

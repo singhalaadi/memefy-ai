@@ -12,26 +12,43 @@ export const useTheme = () => {
 
 export const ThemeProvider = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    const saved = localStorage.getItem("theme");
-    return saved ? JSON.parse(saved) : true;
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem("theme");
+        return saved ? JSON.parse(saved) : true;
+      } catch (error) {
+        console.error('Error reading theme from localStorage:', error);
+        return true;
+      }
+    }
+    return true;
   });
 
   useEffect(() => {
-    localStorage.setItem("theme", JSON.stringify(isDarkMode));
-    document.body.style.transition = "background 0.5s ease, color 0.3s ease";
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem("theme", JSON.stringify(isDarkMode));
+      } catch (error) {
+        console.error('Error saving theme to localStorage:', error);
+      }
+    }
+    
+    if (typeof document !== 'undefined') {
+      document.body.style.transition = "background 0.5s ease, color 0.3s ease";
 
-    if (isDarkMode) {
-      document.documentElement.classList.add("dark");
-      document.documentElement.classList.remove("light");
-      document.body.style.background =
-        "linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%)";
-      document.body.style.color = "#ffffff";
-    } else {
-      document.documentElement.classList.remove("dark");
-      document.documentElement.classList.add("light");
-      document.body.style.background =
-        "linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 50%, #f8fafc 100%)";
-      document.body.style.color = "#1f2937";
+      if (isDarkMode) {
+        document.documentElement.classList.add("dark");
+        document.documentElement.classList.remove("light");
+        document.body.style.background =
+          "linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%)";
+        document.body.style.color = "#ffffff";
+      } else {
+        document.documentElement.classList.remove("dark");
+        document.documentElement.classList.add("light");
+        document.body.style.background =
+          "linear-gradient(135deg, #f0f9ff 0%, #e0e7ff 50%, #f8fafc 100%)";
+        document.body.style.color = "#1f2937";
+      }
     }
   }, [isDarkMode]);
 

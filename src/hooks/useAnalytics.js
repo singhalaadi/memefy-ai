@@ -63,8 +63,8 @@ export const useAnalytics = (userId) => {
         trendsData: generateTrendsData(memes)
       })
     } catch (error) {
-      console.error('Error fetching analytics:', error)
-      // Fallback to demo data if Firebase is not configured
+      // Silently handle Firebase errors (index missing, permissions, etc.)
+      // Use demo data for better user experience
       setAnalytics({
         totalMemes: 5,
         totalViews: 234,
