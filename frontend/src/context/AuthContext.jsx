@@ -127,6 +127,13 @@ export const AuthProvider = ({ children }) => {
         lastUsernameChange: null,
       });
 
+      // Manually set enriched user state after signup to prevent fallback "Meme Legend"
+      setUser(buildUser(result.user, {
+        name,
+        username: cleanUsername,
+        avatar: null
+      }));
+
       toast.success("Account created successfully!");
       return result.user;
     } catch (error) {

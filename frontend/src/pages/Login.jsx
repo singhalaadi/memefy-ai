@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTheme } from '../context/ThemeContext'
 import toast from 'react-hot-toast'
+import { Eye, EyeOff } from 'lucide-react'
 
 const Login = () => {
   const { user, signInWithGoogle, signInWithEmail, signUpWithEmail, loading } = useAuth()
@@ -18,6 +19,7 @@ const Login = () => {
     password: ''
   })
   const [formLoading, setFormLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -200,18 +202,29 @@ const Login = () => {
 
             <div className="space-y-1">
               <label className="text-xs font-semibold ml-1 text-gray-500 uppercase tracking-wider">Password</label>
-              <input
-                type="password"
-                name="password"
-                required
-                value={formData.password}
-                onChange={handleInputChange}
-                placeholder="••••••••"
-                className={`w-full p-4 rounded-2xl border-2 bg-transparent transition-all outline-none ${isDarkMode
-                    ? 'border-white/10 focus:border-pink-500/50 text-white'
-                    : 'border-black/5 focus:border-pink-500/50 text-gray-900'
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  required
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  placeholder="••••••••"
+                  className={`w-full p-4 pr-12 rounded-2xl border-2 bg-transparent transition-all outline-none ${isDarkMode
+                      ? 'border-white/10 focus:border-pink-500/50 text-white'
+                      : 'border-black/5 focus:border-pink-500/50 text-gray-900'
+                    }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className={`absolute right-4 top-1/2 -translate-y-1/2 transition-colors ${
+                    isDarkMode ? 'text-white/40 hover:text-white/70' : 'text-gray-400 hover:text-gray-600'
                   }`}
-              />
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
             </div>
 
             <motion.button

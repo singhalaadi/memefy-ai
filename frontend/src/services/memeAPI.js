@@ -1,6 +1,13 @@
 class MemeApiService {
   constructor() {
-    this.backendUrl = import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:8000';
+    // If developing locally, default to localhost:8000 unless specified otherwise.
+    // In production, prioritize the VITE_BACKEND_API_URL from environment variables.
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    this.backendUrl = import.meta.env.VITE_BACKEND_API_URL;
+    
+    if (!this.backendUrl || isLocalhost) {
+      this.backendUrl = isLocalhost ? 'http://localhost:8000' : (import.meta.env.VITE_BACKEND_API_URL);
+    }
   }
 
   async fetchTemplates() {

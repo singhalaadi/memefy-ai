@@ -116,7 +116,7 @@ const Navbar = () => {
 
               {/* Auth */}
               {user ? (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 ml-2 transition-all">
                   <button
                     onClick={handleLogout}
                     className="flex items-center gap-2 px-3 py-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-full font-medium transition-all duration-300 text-sm border border-red-500/20"
@@ -128,7 +128,7 @@ const Navbar = () => {
               ) : (
                 <Link
                   to="/login"
-                  className="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-cyan-500 px-4 py-2 rounded-full font-semibold text-white hover:opacity-90 transition-all duration-300 text-sm"
+                  className="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-cyan-500 px-4 py-2 rounded-full font-semibold text-white hover:opacity-90 transition-all duration-300 text-sm ml-2"
                 >
                   <LogIn size={16} />
                   <span>Login</span>

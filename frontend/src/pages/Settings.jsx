@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -31,6 +31,15 @@ const Settings = () => {
     const [username, setUsername] = useState(user?.username || "");
     const [avatarPreview, setAvatarPreview] = useState(user?.avatar || null);
     const [avatarFile, setAvatarFile] = useState(null);
+
+    // Sync local state when user context updates (fixes stale UI after signup)
+    useEffect(() => {
+        if (user) {
+            setName(user.name || "");
+            setUsername(user.username || "");
+            setAvatarPreview(user.avatar || null);
+        }
+    }, [user]);
 
     const [savingName, setSavingName] = useState(false);
     const [savingUsername, setSavingUsername] = useState(false);
