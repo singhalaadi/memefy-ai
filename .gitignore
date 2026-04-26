@@ -54,3 +54,14 @@ logs/
 # Build outputs
 dist/
 build/
+
+# Testing & Coverage
+coverage/
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.vitest/
+*.lcov
+coverage-final.json
+

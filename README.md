@@ -229,23 +229,240 @@ users/
 
 ---
 
+## Testing
+
+Memefy-AI includes comprehensive test coverage for both frontend and backend. All tests run automatically via GitHub Actions on every push to `main` and `develop` branches.
+
+### Backend Testing (Python / pytest)
+
+Tests verify:
+- **Toxicity & Sentiment Classification** — SafetyCheck function, calibration heuristics
+- **API Endpoints** — /generate-meme, /templates, health checks
+- **Caption Generation** — Gemini integration, fallback behavior
+- **Error Handling** — Graceful degradation, invalid inputs
+- **Template Trending** — Trend detection, usage tracking
+
+#### Running Backend Tests Locally
+
+```bash
+cd backend
+source venv/bin/activate  # or venv\Scripts\activate on Windows
+
+# Install test dependencies
+pip install pytest pytest-cov pytest-asyncio httpx
+
+# Run all tests
+pytest tests/ -v
+
+# Run with coverage report
+pytest tests/ -v --cov=. --cov-report=html
+# Open htmlcov/index.html to view coverage
+
+# Run specific test file
+pytest tests/test_safety.py -v
+
+# Run tests matching a pattern
+pytest tests/ -k "safe" -v
+```
+
+**Test Files:**
+- `tests/test_safety.py` — Safety/sentiment functions (unit tests)
+- `tests/test_endpoints.py` — FastAPI routes (integration tests)
+- `tests/conftest.py` — Shared fixtures (mocks, sample data)
+
+**Coverage Target:** 70%+ on core functions
+
+---
+
+### Frontend Testing (React / Vitest)
+
+Tests verify:
+- **Component Rendering** — Generator, Gallery, Profile pages
+- **API Integration** — memeAPI service calls, error handling
+- **Custom Hooks** — useMemes, useAnalytics state management
+- **User Interactions** — Button clicks, form submissions
+- **Firebase Auth Flow** — Login, logout, protected routes
+
+#### Running Frontend Tests Locally
+
+```bash
+cd frontend
+
+# Install test dependencies (already in package.json)
+npm install
+
+# Run all tests
+npm run test
+
+# Run tests in watch mode (re-run on file changes)
+npm run test -- --watch
+
+# Run with UI dashboard
+npm run test:ui
+
+# Generate coverage report
+npm run test:coverage
+# Open coverage/index.html to view HTML report
+```
+
+**Test Files:**
+- `src/__tests__/services/memeAPI.test.js` — API service mocking
+- `src/__tests__/components/Profile.test.jsx` — Component rendering
+- `src/__tests__/pages/Generator.test.jsx` — Page-level tests
+- `src/__tests__/hooks/useMemes.test.js` — Custom hooks
+- `src/__tests__/setup.js` — Test environment configuration
+
+**Coverage Target:** 60%+ on components and utilities
+
+---
+
+### Continuous Integration (GitHub Actions)
+
+Tests run automatically on every push with the workflow defined in `.github/workflows/test-and-deploy.yml`.
+
+**Workflow Steps:**
+1. **Backend Tests** — Pytest with coverage reporting
+2. **Frontend Tests** — Vitest with coverage reporting
+3. **Coverage Upload** — Send results to Codecov
+4. **Build Verification** — Ensure no build errors before deploy
+5. **Deployment Check** — Ready-to-deploy notification
+
+**Example GitHub Actions Run:**
+```
+test-backend          [3m 12s]  — 48 tests passed, 72% coverage
+test-frontend         [2m 45s]  — 32 tests passed, 65% coverage
+⏭ build-backend         [skipped if tests fail]
+⏭ build-frontend        [skipped if tests fail]
+deploy-notification   All tests passed! Ready for deployment.
+```
+
+**Deploy Triggers:**
+- Tests must **all pass** before code can be deployed
+- Only `main` branch auto-deploys to Render (backend) & Netlify (frontend)
+- `develop` branch runs tests but doesn't deploy
+
+---
+
+### Writing New Tests
+
+#### Backend Test Template (pytest)
+
+```python
+import pytest
+from unittest.mock import patch
+from main import check_safety, sentiment_label
+
+class TestSafetyFeatures:
+    def test_safe_text(self):
+        """Test that safe text returns correct label."""
+        safe, prob = check_safety("I love this movie!")
+        assert safe == True
+        assert prob < 0.5
+
+    @patch("main.tfidf")
+    @patch("main.clf")
+    def test_with_mocked_models(self, mock_clf, mock_tfidf):
+        """Test with mocked ML models to speed up tests."""
+        mock_tfidf.transform.return_value = [[0.2]]
+        mock_clf.predict_proba.return_value = [[0.9, 0.1]]
+        
+        safe, prob = check_safety("Test text")
+        assert safe == True
+```
+
+#### Frontend Test Template (Vitest)
+
+```jsx
+import { describe, it, expect, vi } from 'vitest'
+import { render, screen } from '@testing-library/react'
+
+describe('MyComponent', () => {
+  it('should render correctly', () => {
+    render(<MyComponent />)
+    expect(screen.getByRole('button')).toBeInTheDocument()
+  })
+
+  it('should handle user interactions', () => {
+    const { getByRole } = render(<MyComponent />)
+    fireEvent.click(getByRole('button'))
+    // Assert expected behavior
+  })
+})
+```
+
+**Best Practices:**
+- Mock external APIs (Firebase, Gemini, Imgflip)
+- Test behavior, not implementation details
+- Keep tests focused and isolated
+- Use descriptive test names
+- Aim for high coverage on critical paths
+
+---
+
+### Troubleshooting Tests
+
+**Backend: "ModuleNotFoundError: No module named 'main'"**
+```bash
+cd backend
+python -c "import sys; sys.path.insert(0, '.'); from main import app"
+```
+
+**Frontend: "Cannot find module '@testing-library/react'"**
+```bash
+cd frontend
+npm install
+npm run test
+```
+
+**Coverage Reports Not Generating**
+```bash
+# Backend
+pytest tests/ --cov=. --cov-report=html
+
+# Frontend
+npm run test:coverage
+```
+
+**Tests Timeout**
+- Increase timeout in `pytest.ini` or `vitest.config.js`
+- Mock slow API calls
+- Run with `--timeout=10000` (vitest in milliseconds)
+
+---
+
 ## Project Structure
 
 ```
 memefy-ai/
+├── .github/
+│   └── workflows/
+│       └── test-and-deploy.yml    # CI/CD workflow
 ├── backend/
-│   ├── artifacts/          # Trained ML model files (.joblib)
-│   ├── main.py             # FastAPI app, routes, Gemini integration
-│   ├── requirements.txt
+│   ├── artifacts/                  # Trained ML model files (.joblib)
+│   ├── tests/                      # Pytest test files
+│   │   ├── conftest.py             # Shared fixtures
+│   │   ├── test_safety.py          # Unit tests for ML functions
+│   │   └── test_endpoints.py       # API endpoint tests
+│   ├── main.py                     # FastAPI app, routes, Gemini integration
+│   ├── requirements.txt            # Python dependencies (includes pytest)
+│   ├── pytest.ini                  # Pytest configuration
 │   └── .env.example
 ├── frontend/
 │   ├── src/
-│   │   ├── components/     # Reusable UI components
-│   │   ├── context/        # React contexts (Auth, Theme)
-│   │   ├── hooks/          # Custom hooks (useMemes, useAnalytics)
-│   │   ├── pages/          # Route-level page components
-│   │   ├── services/       # API clients (memeAPI, firebaseAI)
-│   │   └── config/         # Firebase initialization
+│   │   ├── __tests__/              # Vitest test files
+│   │   │   ├── setup.js            # Test environment setup
+│   │   │   ├── components/         # Component tests
+│   │   │   ├── hooks/              # Hook tests
+│   │   │   ├── pages/              # Page tests
+│   │   │   └── services/           # Service tests
+│   │   ├── components/             # Reusable UI components
+│   │   ├── context/                # React contexts (Auth, Theme)
+│   │   ├── hooks/                  # Custom hooks (useMemes, useAnalytics)
+│   │   ├── pages/                  # Route-level page components
+│   │   ├── services/               # API clients (memeAPI, firebaseAI)
+│   │   └── config/                 # Firebase initialization
+│   ├── vitest.config.js            # Vitest configuration
+│   ├── package.json                # Dependencies (includes vitest)
 │   ├── .env.example
 │   └── vite.config.js
 └── README.md

@@ -6,3 +6,9 @@ numpy
 scikit-learn
 google-genai
 python-dotenv
+
+# Testing
+pytest
+pytest-cov
+pytest-asyncio
+httpx
